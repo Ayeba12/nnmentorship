@@ -1,0 +1,38 @@
+[
+  {
+    "id": "book-1",
+    "title": "Nigerian Navy Doctrine 2020",
+    "author": "Navy Headquarters (NHQ)",
+    "category": "Doctrine",
+    "fileSize": "4.8 MB",
+    "uploadedById": "user-admin-1",
+    "uploadedByName": "Admiral Ibrahim Ola",
+    "status": "APPROVED",
+    "downloadCount": 142,
+    "createdAt": "2025-06-24T13:16:07.658Z"
+  },
+  {
+    "id": "book-2",
+    "title": "Officer of the Watch Seamanship Reference Manual",
+    "author": "Naval Training Command",
+    "category": "Manuals",
+    "fileSize": "12.4 MB",
+    "uploadedById": "user-mentor-3",
+    "uploadedByName": "Commander Olayemi Cole",
+    "status": "APPROVED",
+    "downloadCount": 98,
+    "createdAt": "2026-03-16T13:16:07.658Z"
+  },
+  {
+    "id": "book-pending",
+    "title": "Logistical Support Strategies for Patrol Vessels at Sea",
+    "author": "Rear Admiral Joseph Okonkwo (Rtd.)",
+    "category": "Logistics",
+    "fileSize": "2.1 MB",
+    "uploadedById": "user-mentor-retired-1",
+    "uploadedByName": "Rear Admiral Joseph Okonkwo (Rtd.)",
+    "status": "PENDING",
+    "downloadCount": 0,
+    "createdAt": "2026-06-24T13:16:07.658Z"
+  }
+]

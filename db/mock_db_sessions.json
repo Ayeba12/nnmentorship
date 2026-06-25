@@ -1,0 +1,60 @@
+[
+  {
+    "id": "session-1",
+    "pairId": "pair-1",
+    "title": "Initial Matching & Action Plan Review",
+    "dateTime": "2026-06-14T13:16:07.657Z",
+    "status": "COMPLETED",
+    "goalsAddressed": [
+      "Complete Officer of the Watch engineering log approvals"
+    ]
+  },
+  {
+    "id": "session-2",
+    "pairId": "pair-1",
+    "title": "Propulsion Load Balancing & Auxiliary Diagnostics",
+    "dateTime": "2026-06-26T13:16:07.657Z",
+    "status": "SCHEDULED",
+    "goalsAddressed": [
+      "Master diesel generator load balancing procedures"
+    ]
+  },
+  {
+    "id": "session-3",
+    "pairId": "pair-2",
+    "title": "Combat Software Training",
+    "dateTime": "2026-06-12T13:16:07.657Z",
+    "status": "COMPLETED",
+    "goalsAddressed": [
+      "Learn combat management software system navigation"
+    ]
+  },
+  {
+    "id": "session-4",
+    "pairId": "pair-2",
+    "title": "Weapons Alignment Protocol Review",
+    "dateTime": "2026-06-19T13:16:07.657Z",
+    "status": "COMPLETED",
+    "goalsAddressed": [
+      "Calibrate vessel weapons electrical alignment"
+    ]
+  },
+  {
+    "id": "session-5",
+    "pairId": "pair-2",
+    "title": "System Check & Refit Review",
+    "dateTime": "2026-06-27T13:16:07.657Z",
+    "status": "SCHEDULED",
+    "goalsAddressed": []
+  },
+  {
+    "id": "session-6",
+    "pairId": "pair-3",
+    "title": "Intro to Supply Chain Management",
+    "dateTime": "2026-05-05T13:16:07.657Z",
+    "status": "COMPLETED",
+    "goalsAddressed": [
+      "Create civilian maritime transition plan"
+    ]
+  }
+]

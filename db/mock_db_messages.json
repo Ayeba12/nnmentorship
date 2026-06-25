@@ -1,0 +1,23 @@
+[
+  {
+    "id": "msg-1",
+    "pairId": "pair-1",
+    "senderId": "user-mentee-1",
+    "content": "Good morning, Captain. I have drafted the safety checklist for the dockyard refit next week.",
+    "timestamp": "2026-06-22T10:16:07.657Z"
+  },
+  {
+    "id": "msg-2",
+    "pairId": "pair-1",
+    "senderId": "user-mentor-1",
+    "content": "Well done, Lieutenant. Send it over, and let's review it during our scheduled call on Friday. Focus on safety margins.",
+    "timestamp": "2026-06-22T13:16:07.657Z"
+  },
+  {
+    "id": "msg-3",
+    "pairId": "pair-1",
+    "senderId": "user-mentee-1",
+    "content": "Understood, Sir. I will submit it before Friday.",
+    "timestamp": "2026-06-23T13:16:07.657Z"
+  }
+]

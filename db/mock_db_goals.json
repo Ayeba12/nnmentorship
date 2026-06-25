@@ -1,0 +1,38 @@
+[
+  {
+    "id": "goal-1",
+    "pairId": "pair-1",
+    "title": "Master diesel generator load balancing procedures",
+    "status": "IN_PROGRESS"
+  },
+  {
+    "id": "goal-2",
+    "pairId": "pair-1",
+    "title": "Complete Officer of the Watch engineering log approvals",
+    "status": "COMPLETED"
+  },
+  {
+    "id": "goal-3",
+    "pairId": "pair-1",
+    "title": "Develop Dockyard Refit Safety Checklist",
+    "status": "PENDING"
+  },
+  {
+    "id": "goal-4",
+    "pairId": "pair-2",
+    "title": "Learn combat management software system navigation",
+    "status": "IN_PROGRESS"
+  },
+  {
+    "id": "goal-5",
+    "pairId": "pair-2",
+    "title": "Calibrate vessel weapons electrical alignment",
+    "status": "COMPLETED"
+  },
+  {
+    "id": "goal-6",
+    "pairId": "pair-3",
+    "title": "Create civilian maritime transition plan",
+    "status": "COMPLETED"
+  }
+]

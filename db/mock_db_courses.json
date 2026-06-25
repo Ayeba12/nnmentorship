@@ -1,0 +1,136 @@
+[
+  {
+    "id": "course-1",
+    "title": "Officer of the Watch (OOW) Watchkeeping & Seamanship",
+    "description": "Essential training module covering radar plotting, collision avoidance regulations (COLREGs), and bridge deck team management.",
+    "instructorId": "user-mentor-3",
+    "instructorName": "Commander Olayemi Cole",
+    "lessons": [
+      "Introduction to Seamanship & Nautical Rules",
+      "COLREGs & Radar Collision Plotting",
+      "Bridge Communication and Watch Handover Protocols",
+      "Emergency Operations: Man Overboard and Anchoring Protocols"
+    ],
+    "status": "APPROVED",
+    "createdAt": "2026-05-15T13:16:07.658Z"
+  },
+  {
+    "id": "course-2",
+    "title": "Afloat Diesel Propulsion Operations & Auxiliary Diagnostics",
+    "description": "Deep dive study for marine engineering officers on maintaining MTU auxiliary power generators, diesel combustion logs, and gearbox refits.",
+    "instructorId": "user-mentor-1",
+    "instructorName": "Captain Kelechi Amadi",
+    "lessons": [
+      "Marine Diesel Engine Fundamental Mechanics",
+      "Refit Diagnostics & Pressure Log Verification",
+      "Auxiliary Power Grid Load Balancing",
+      "Dockyard Maintenance Refit Protocols"
+    ],
+    "status": "APPROVED",
+    "createdAt": "2026-06-04T13:16:07.658Z"
+  },
+  {
+    "id": "course-3",
+    "title": "Maritime Boundary Law & EEZ Patrol Strategy",
+    "description": "Legal and tactical frameworks for patrolling Nigeria's Exclusive Economic Zone, prosecuting illegal fishing, and implementing Gulf of Guinea security accords.",
+    "instructorId": "user-mentor-retired-1",
+    "instructorName": "Rear Admiral Joseph Okonkwo (Rtd.)",
+    "lessons": [
+      "Introduction to Maritime Jurisdiction",
+      "EEZ Policing & Rules of Engagement",
+      "Boarding Operations Legal Procedures",
+      "International Piracy Tribunals Case Studies"
+    ],
+    "status": "APPROVED",
+    "createdAt": "2026-06-09T13:16:07.658Z"
+  },
+  {
+    "id": "course-4",
+    "title": "Combat Systems Alignment & Electronic Warfare",
+    "description": "Technical manuals on radar calibration, fire control systems, and jamming countermeasures for electrical engineering officers.",
+    "instructorId": "user-mentor-2",
+    "instructorName": "Commodore Adebayo Balogun",
+    "lessons": [
+      "Radar Target Acquisition & Tracking",
+      "Electronic Support Measures (ESM)",
+      "Weapons Control System Integration",
+      "Anti-Ship Missile Countermeasures"
+    ],
+    "status": "APPROVED",
+    "createdAt": "2026-06-12T13:16:07.658Z"
+  },
+  {
+    "id": "course-5",
+    "title": "Naval Logistics, Supply Chain & Fleet Sustainment",
+    "description": "Detailed training on replenishment at sea, dockyard procurement, and spare parts cataloging for logistics officers.",
+    "instructorId": "user-mentor-retired-1",
+    "instructorName": "Rear Admiral Joseph Okonkwo (Rtd.)",
+    "lessons": [
+      "Replenishment at Sea (RAS) Operations",
+      "Naval Dockyard Inventory Systems",
+      "Fleet Asset Lifecycle Planning",
+      "Global Maritime Supply Networks"
+    ],
+    "status": "APPROVED",
+    "createdAt": "2026-06-14T13:16:07.658Z"
+  },
+  {
+    "id": "course-6",
+    "title": "Hydrographic Surveying & Sea Charting Protocols",
+    "description": "Advanced course on sonar bathymetry, tidal corrections, and compiling official charts for the Nigerian Navy Hydrographic Office.",
+    "instructorId": "user-mentor-1",
+    "instructorName": "Captain Kelechi Amadi",
+    "lessons": [
+      "Single-beam & Multi-beam Sonar Operation",
+      "Tidal Heights & Data Correction",
+      "Electronic Navigational Charts (ENC) Standards",
+      "Submarine Topography Mapping"
+    ],
+    "status": "APPROVED",
+    "createdAt": "2026-06-16T13:16:07.658Z"
+  },
+  {
+    "id": "course-7",
+    "title": "Naval Command Leadership & Administrative Doctrine",
+    "description": "Officer-level training covering staff writing, operational briefing structures, military justice procedures, and command ethics.",
+    "instructorId": "user-mentor-3",
+    "instructorName": "Commander Olayemi Cole",
+    "lessons": [
+      "Naval Staff Correspondence & Writing",
+      "Operational Briefing & Command Presence",
+      "Code of Conduct & Military Justice",
+      "Crisis Decision Making Paradigms"
+    ],
+    "status": "APPROVED",
+    "createdAt": "2026-06-19T13:16:07.658Z"
+  },
+  {
+    "id": "course-8",
+    "title": "Search and Rescue (SAR) Mission Coordination",
+    "description": "Tactical procedures for search pattern planning, communications with maritime rescue coordination centers, and rescue helicopter operations.",
+    "instructorId": "user-mentor-3",
+    "instructorName": "Commander Olayemi Cole",
+    "lessons": [
+      "SAR Comm & Distress Frequencies",
+      "Search Pattern Plotting & Drift Calculations",
+      "Helicopter Deck Operations at Sea",
+      "Multi-agency Incident Command Systems"
+    ],
+    "status": "APPROVED",
+    "createdAt": "2026-06-22T13:16:07.658Z"
+  },
+  {
+    "id": "course-pending",
+    "title": "Naval Intelligence Gathering & Reconnaissance Strategies",
+    "description": "Detailed seminar outlining signal intelligence parsing, radar interception logs, and littoral zone intelligence networks.",
+    "instructorId": "user-mentor-retired-pending",
+    "instructorName": "Muhammad Bello (Rtd.)",
+    "lessons": [
+      "Signal Intelligence Fundamentals",
+      "Reconnaissance Log Compilation",
+      "Littoral Threat Identification Protocols"
+    ],
+    "status": "PENDING",
+    "createdAt": "2026-06-24T13:16:07.658Z"
+  }
+]

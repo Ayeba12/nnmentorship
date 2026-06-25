@@ -1,0 +1,121 @@
+[
+  {
+    "id": "post-1",
+    "title": "Watchkeeping Principles & Precision Navigation at Sea",
+    "content": "Precision watchkeeping is the cornerstone of maritime safety. As officers of the deck, your vigilance is the shield that guards the ship, crew, and mission. Ensure you verify GPS parameters with manual compass sightings every watch rotation.",
+    "authorId": "user-mentor-3",
+    "authorName": "Commander Olayemi Cole",
+    "category": "Navigation & Tactics",
+    "tags": [
+      "Watchkeeping",
+      "Navigation",
+      "Operations"
+    ],
+    "status": "APPROVED",
+    "createdAt": "2026-06-09T13:16:07.658Z"
+  },
+  {
+    "id": "post-2",
+    "title": "Transitioning to Maritime Corporate Supply Chains: A Veteran Guide",
+    "content": "Transitioning out of active duty is a significant milestone. The logistical planning, chain of command leadership, and risk management skills you acquired in the Nigerian Navy map directly to corporate port logistics and supply chain optimization. Start building networks early.",
+    "authorId": "user-mentor-retired-1",
+    "authorName": "Rear Admiral Joseph Okonkwo (Rtd.)",
+    "category": "Career Transition",
+    "tags": [
+      "Logistics",
+      "Veterans",
+      "Career"
+    ],
+    "status": "APPROVED",
+    "createdAt": "2026-06-17T13:16:07.658Z"
+  },
+  {
+    "id": "post-3",
+    "title": "Naval Leadership & Decision Making in High-Stress Environments",
+    "content": "Under pressure, command decisions must be swift and clear. Leadership at sea requires an understanding of team dynamics, situational awareness, and delegation. Cultivate trust with your bridge team during calm waters so it holds firm in high seas.",
+    "authorId": "user-mentor-1",
+    "authorName": "Captain Ibrahim Bello",
+    "category": "Navigation & Tactics",
+    "tags": [
+      "Leadership",
+      "Command",
+      "Tactics"
+    ],
+    "status": "APPROVED",
+    "createdAt": "2026-06-12T13:16:07.658Z"
+  },
+  {
+    "id": "post-4",
+    "title": "Propulsion System Maintenance: Preventing Marine Machinery Failures",
+    "content": "Marine diesel engines and electrical propulsion grids require rigorous preventative maintenance schedules. Monitoring fuel oil purity, cooling loop temperatures, and alignment shafts is critical to avoiding propulsion loss during underway operations.",
+    "authorId": "user-mentor-4",
+    "authorName": "Lt. Commander Kelechi Amadi",
+    "category": "Marine Engineering",
+    "tags": [
+      "Engineering",
+      "Maintenance",
+      "Propulsion"
+    ],
+    "status": "APPROVED",
+    "createdAt": "2026-06-19T13:16:07.658Z"
+  },
+  {
+    "id": "post-5",
+    "title": "Logistical Readiness: Supply Chain Strategies for Extended Deployments",
+    "content": "A ship is only as operational as its stores allow. Operational supply chain logistics require predicting demand for spare parts, dry provisions, and fuel oil bunkering. Rigorous tracking of replenishment-at-sea guidelines ensures uninterrupted patrol operations.",
+    "authorId": "user-mentor-5",
+    "authorName": "Commander Amina Yusuf",
+    "category": "Logistics & Supply",
+    "tags": [
+      "Logistics",
+      "Supply",
+      "Underway Replenishment"
+    ],
+    "status": "APPROVED",
+    "createdAt": "2026-06-04T13:16:07.658Z"
+  },
+  {
+    "id": "post-6",
+    "title": "Analysis of Maritime Domain Awareness Systems in the Gulf of Guinea",
+    "content": "Modern naval intelligence relies heavily on integrated maritime domain awareness (MDA). By fusing satellite AIS data, coastal radar sweeps, and aerial patrol feeds, command centers can identify illegal bunkering and piracy activities before they reach regional shipping lanes.",
+    "authorId": "user-mentor-6",
+    "authorName": "Lt. Commander Yusuf Musa",
+    "category": "Naval Intelligence",
+    "tags": [
+      "Intelligence",
+      "MDA",
+      "Security"
+    ],
+    "status": "APPROVED",
+    "createdAt": "2026-06-22T13:16:07.658Z"
+  },
+  {
+    "id": "post-7",
+    "title": "Standard Operational Procedures: Quick Reference Guide to COLREGs",
+    "content": "Adherence to the International Regulations for Preventing Collisions at Sea (COLREGs) is mandatory for every watchstander. This quick-reference guide breaks down rules for crossing situations, head-on encounters, and overtaking responsibilities to maintain safe CPA distances.",
+    "authorId": "user-mentor-3",
+    "authorName": "Commander Olayemi Cole",
+    "category": "Doctrine & Manuals",
+    "tags": [
+      "COLREGs",
+      "Watchkeeping",
+      "SOP"
+    ],
+    "status": "APPROVED",
+    "createdAt": "2026-06-15T13:16:07.658Z"
+  },
+  {
+    "id": "post-pending",
+    "title": "Tactical Operations in the Gulf of Guinea: Anti-Piracy Lessons",
+    "content": "Recent operations in the Gulf of Guinea have shown the importance of rapid boarding team deployment. The integration of helicopter support with fast interceptor boats provides a decisive tactical advantage. Here are three command principles for boarding officer training...",
+    "authorId": "user-mentor-retired-pending",
+    "authorName": "Muhammad Bello (Rtd.)",
+    "category": "Tactical Intelligence",
+    "tags": [
+      "Security",
+      "Maritime Warfare"
+    ],
+    "status": "PENDING",
+    "createdAt": "2026-06-24T13:16:07.658Z"
+  }
+]

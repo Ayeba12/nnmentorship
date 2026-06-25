@@ -1,26 +1,122 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@theme {
+  /* Lighter navy palette — used as accent, not dominant */
+  --color-navy-50: #f2f5fa;
+  --color-navy-100: #e2ebf5;
+  --color-navy-200: #c5d5ec;
+  --color-navy-300: #98b7e0;
+  --color-navy-400: #6292d1;
+  --color-navy-500: #00153D;
+  --color-navy-600: #000f2a;
+  --color-navy-700: #00153D;
+  --color-navy-800: #00153D;
+  --color-navy-900: #00153D;
+  --color-navy-950: #00153D;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  /* Lighter gold — muted accent */
+  --color-gold-50: #fdfaf3;
+  --color-gold-100: #f8f0db;
+  --color-gold-200: #f0e0b8;
+  --color-gold-300: #e6cd92;
+  --color-gold-400: #d9b76e;
+  --color-gold-500: #c9a14e;
+  --color-gold-600: #ad8438;
+  --color-gold-700: #8a6829;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Ocean accent */
+  --color-ocean-50: #f0f9fb;
+  --color-ocean-100: #dcf2f6;
+  --color-ocean-200: #bce5ec;
+  --color-ocean-300: #88d0dd;
+  --color-ocean-400: #4db4c9;
+  --color-ocean-500: #2a96b0;
+  --color-ocean-600: #1d7a93;
+
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-heading: 'Plus Jakarta Sans', system-ui, sans-serif;
+
+  --shadow-soft: 0 1px 2px rgba(34, 43, 61, 0.03), 0 1px 3px rgba(34, 43, 61, 0.04);
+  --shadow-card: 0 1px 2px rgba(34, 43, 61, 0.04), 0 2px 6px rgba(34, 43, 61, 0.05);
+  --shadow-lifted: 0 2px 8px rgba(34, 43, 61, 0.06), 0 8px 24px rgba(34, 43, 61, 0.08);
+  --shadow-glow: 0 0 0 1px rgba(201, 161, 78, 0.1), 0 2px 12px rgba(201, 161, 78, 0.08);
+
+  /* Reduced border radius scale globally */
+  --radius-3xl: 12px;
+  --radius-2xl: 8px;
+  --radius-xl: 6px;
+  --radius-lg: 4px;
+  --radius-md: 3px;
+  --radius: 3px;
+  --radius-sm: 2px;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: #f6f8fb;
+  color: #00153D;
 }
+
+h1, h2, h3, h4, h5 {
+  font-family: var(--font-heading);
+  letter-spacing: -0.02em;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d8dde9; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #b8c1d4; }
+
+/* Line clamp */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Animations */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideDown { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes scaleIn { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
+@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+
+.animate-fade-in { animation: fadeIn 0.25s ease-out; }
+.animate-slide-up { animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
+.animate-slide-down { animation: slideDown 0.25s ease-out; }
+.animate-scale-in { animation: scaleIn 0.15s ease-out; }
+
+/* Skeleton shimmer */
+.skeleton {
+  background: linear-gradient(90deg, #eceff5 25%, #f6f8fb 50%, #eceff5 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Card hover lift */
+.card-lift {
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.card-lift:hover {
+  transform: translateY(-1px);
+}
+
+/* Subtle mesh for sidebar — very light */
+.sidebar-bg {
+  background: #ffffff;
+  border-right: 1px solid #eceff5;
+}
+
+/* Hide scrollbar for horizontal scroll areas */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
