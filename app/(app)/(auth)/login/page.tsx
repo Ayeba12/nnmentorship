@@ -233,15 +233,6 @@ function LoginContent() {
             Don't have an account?{' '}
             <Link href="/signup" className="text-navy-700 font-medium hover:text-navy-900 transition-colors">Create one</Link>
           </p>
-
-          <div className="mt-6 p-3 bg-white rounded-md border border-navy-100">
-            <p className="text-xs font-medium text-navy-500 mb-1.5">Demo Access</p>
-            <div className="flex items-center gap-2 text-xs text-navy-400">
-              <code className="px-2 py-0.5 bg-navy-50 rounded font-mono text-navy-600">admin@navymentor.ng</code>
-              <span>·</span>
-              <code className="px-2 py-0.5 bg-navy-50 rounded font-mono text-navy-600">password123</code>
-            </div>
-          </div>
         </div>
       </div>
     </div>
