@@ -296,7 +296,7 @@ export default function PublicHome() {
                 }} 
               />
               <video
-                src="/assets/hero-video.mp4"
+                src="https://ffomtjfsjimvhibrdgra.supabase.co/storage/v1/object/public/public-assets/hero-video.mp4"
                 autoPlay
                 loop
                 muted
