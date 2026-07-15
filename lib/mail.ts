@@ -6,6 +6,9 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://navymentor.ng';
 const LOGO_URL = `${APP_URL}/assets/nigerian-navy-logo.png`;
 const BANNER_URL = `${APP_URL}/assets/fleet-at-sea.jpg`;
 
+// Configurable sender domain (e.g., nnmentorship.com)
+const MAIL_FROM_DOMAIN = process.env.MAIL_FROM_DOMAIN || 'nnmentorship.com';
+
 export const mailer = {
   /**
    * Sends a beautiful Welcome Email when a new user registers.
@@ -65,7 +68,7 @@ export const mailer = {
     `;
 
     return resend.emails.send({
-      from: 'Nigerian Navy Mentorship <onboarding@navymentor.ng>',
+      from: `Nigerian Navy Mentorship <onboarding@${MAIL_FROM_DOMAIN}>`,
       to: [to],
       subject: 'Welcome to the Nigerian Navy Mentorship Platform',
       html,
@@ -121,7 +124,7 @@ export const mailer = {
     `;
 
     return resend.emails.send({
-      from: 'Nigerian Navy Security <security@navymentor.ng>',
+      from: `Nigerian Navy Security <security@${MAIL_FROM_DOMAIN}>`,
       to: [to],
       subject: 'Reset Your Password — Nigerian Navy Mentorship',
       html,
@@ -200,7 +203,7 @@ export const mailer = {
     // or using standard loop depending on size. We will send to all emails as BCC
     // or split into chunks of 100 to ensure high delivery rate and prevent disclosing user emails.
     return resend.emails.send({
-      from: 'Nigerian Navy Headquaters <announcements@navymentor.ng>',
+      from: `Nigerian Navy Headquarters <announcements@${MAIL_FROM_DOMAIN}>`,
       to: ['broadcast@navymentor.ng'], // Dummy receiver
       bcc: emails,                     // Hides recipient list from each other
       subject: `New Event: ${eventTitle} — Nigerian Navy Mentorship`,
@@ -286,7 +289,7 @@ export const mailer = {
     `;
 
     return resend.emails.send({
-      from: 'Nigerian Navy Mentorship <events@navymentor.ng>',
+      from: `Nigerian Navy Mentorship <events@${MAIL_FROM_DOMAIN}>`,
       to: [to],
       subject: `RSVP Confirmation: ${eventTitle} — ${statusText}`,
       html,
