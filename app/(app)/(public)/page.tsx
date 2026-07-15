@@ -302,7 +302,7 @@ export default function PublicHome() {
                 playsInline
                 style={{ width: "100%", height: "100%", objectFit: "cover", pointerEvents: "none" }}
               >
-                <source src="https://ffomtjfsjimvhibrdgra.supabase.co/storage/v1/object/public/public-assets/hero-video.mp4" type="video/mp4" />
+                <source src="https://stream.mux.com/Dx5fVJRRY8rSrzsApyHO00ptVbE6VCsX5eVjdD00OD6bY/medium.mp4" type="video/mp4" />
                 Your browser does not support the video tag.
               </video>
 
