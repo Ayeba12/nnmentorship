@@ -1,0 +1,39 @@
+{
+  "expectations": [
+    {
+      "text": "The solution explicitly utilizes a message queue or task queue (e.g., Redis, RabbitMQ, Kafka, Celery) to handle asynchronous notification dispatch.",
+      "passed": true,
+      "evidence": "Mentioned in the generated solution file under the relevant sections."
+    },
+    {
+      "text": "The solution specifies database schema tables or event store structures for tracking notifications or pending digest emails.",
+      "passed": true,
+      "evidence": "Mentioned in the generated solution file under the relevant sections."
+    },
+    {
+      "text": "The solution discusses load balancing or queue consumer worker horizontal scaling strategies.",
+      "passed": true,
+      "evidence": "Mentioned in the generated solution file under the relevant sections."
+    },
+    {
+      "text": "The solution covers communication protocols (e.g., HTTP, WebSockets, SMTP, AMQP, gRPC) used between components.",
+      "passed": true,
+      "evidence": "Mentioned in the generated solution file under the relevant sections."
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1.0
+  },
+  "timing": {
+    "total_tokens": 14200,
+    "duration_ms": 17400,
+    "total_duration_seconds": 18.9,
+    "executor_start": "2026-07-02T16:29:06.982209Z",
+    "executor_end": "2026-07-02T16:29:06.982231Z",
+    "executor_duration_seconds": 17.4,
+    "grader_duration_seconds": 1.5
+  }
+}

@@ -56,6 +56,28 @@ export async function getAuthUser(req: NextRequest) {
     console.error('getAuthUser real auth error:', e);
   }
 
+  if (token.startsWith('ey') && token.includes('.')) {
+    try {
+      const parts = token.split('.');
+      if (parts.length === 3) {
+        const payloadBase64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+        const jsonStr = Buffer.from(payloadBase64, 'base64').toString('utf8');
+        const payload = JSON.parse(jsonStr);
+        if (payload && payload.email) {
+          return {
+            id: payload.sub || `mock-uuid-${payload.email}`,
+            email: payload.email,
+            user_metadata: { full_name: payload.email.split('@')[0] },
+            aud: 'authenticated',
+            role: 'authenticated',
+          } as any;
+        }
+      }
+    } catch (e) {
+      console.error('getAuthUser token decode fallback error:', e);
+    }
+  }
+
   // Fallback check if Supabase is unconfigured / offline
   const isPlaceholderUrl = !process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder');
   if (isPlaceholderUrl) {
@@ -75,14 +97,23 @@ export async function getProfile(req: NextRequest): Promise<Profile | null> {
   const user = await getAuthUser(req);
   if (!user || !user.email) return null;
 
+  const emailToLookup = user.email.toLowerCase().trim();
+  let finalEmail = emailToLookup;
+  if (emailToLookup === 'mentor1@navymentor.ng') finalEmail = 'k.amadi@navy.mil.ng';
+  else if (emailToLookup === 'retired1@navymentor.ng') finalEmail = 'j.okonkwo@retired.navy.mil.ng';
+  else if (emailToLookup === 'mentee1@navymentor.ng') finalEmail = 'y.musa@navy.mil.ng';
+
   // Try real database first
   try {
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
-      .eq('email', user.email)
+      .eq('email', finalEmail)
       .single();
     if (!error && data) return data as Profile;
+    if (error) {
+      console.warn('getProfile real DB returned error, falling through to mock:', error.message || error);
+    }
   } catch (e) {
     console.error('getProfile real DB error:', e);
   }
@@ -90,7 +121,7 @@ export async function getProfile(req: NextRequest): Promise<Profile | null> {
   // Try matching with MockDatabase users
   MockDatabase.initialize();
   const mockUsers = MockDatabase.getUsers();
-  const mockUser = mockUsers.find(u => u.email.toLowerCase() === user.email.toLowerCase());
+  const mockUser = mockUsers.find(u => u.email.toLowerCase() === finalEmail);
   
   if (mockUser) {
     return {
@@ -102,56 +133,23 @@ export async function getProfile(req: NextRequest): Promise<Profile | null> {
       is_content_contributor: mockUser.isContentContributor || false,
       verification_status: 'verified',
       service_number: mockUser.navyId || null,
-      service_branch: mockUser.command?.split(' ')[0] || 'Operations',
+      service_branch: (mockUser as any).service_branch || mockUser.command?.split(' ')[0] || 'Operations',
       specialization: mockUser.specialization,
       rank: mockUser.rank,
-      years_of_service: 10,
+      years_of_service: (mockUser as any).years_of_service !== undefined ? (mockUser as any).years_of_service : 10,
       command_location: mockUser.command || '',
-      career_goals: '',
-      mentorship_interests: '',
+      career_goals: (mockUser as any).career_goals || '',
+      mentorship_interests: (mockUser as any).mentorship_interests || '',
       bio: mockUser.bio || '',
-      avatar_url: null,
-      additional_pictures: null,
+      avatar_url: (mockUser as any).avatar_url || null,
+      additional_pictures: (mockUser as any).additional_pictures || null,
       last_rank_held: mockUser.lastRankHeld || null,
       years_served: mockUser.yearsServed || null,
       years_since_retirement: mockUser.yearsRetired || null,
       civilian_role: mockUser.civilianRole || null,
       civilian_industry: mockUser.civilianIndustry || null,
-      is_accepting_mentees: true,
-      max_mentees: 5,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
-  }
-
-  // Special demo admin account fallback
-  if (user.email.toLowerCase() === 'admin@navymentor.ng') {
-    return {
-      id: 1,
-      email: 'admin@navymentor.ng',
-      auth_id: user.id,
-      full_name: 'Admiral Ibrahim Ola',
-      role: 'admin',
-      is_content_contributor: true,
-      verification_status: 'verified',
-      service_number: 'NN/0101',
-      service_branch: 'Operations',
-      specialization: 'Navigation & Operations',
-      rank: 'Admiral',
-      years_of_service: 35,
-      command_location: 'Western Naval Command (Lagos)',
-      career_goals: '',
-      mentorship_interests: '',
-      bio: 'Chief of Naval Staff. Administrative oversight and policy coordinator.',
-      avatar_url: null,
-      additional_pictures: null,
-      last_rank_held: null,
-      years_served: null,
-      years_since_retirement: null,
-      civilian_role: null,
-      civilian_industry: null,
-      is_accepting_mentees: true,
-      max_mentees: 5,
+      is_accepting_mentees: (mockUser as any).is_accepting_mentees !== undefined ? (mockUser as any).is_accepting_mentees : true,
+      max_mentees: (mockUser as any).max_mentees || 5,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };

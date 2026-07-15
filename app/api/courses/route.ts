@@ -82,18 +82,118 @@ const MOCK_COURSES = [
         order_index: 1
       }
     ]
+  },
+  {
+    id: 103,
+    title: 'Special Naval Warfare & SBS Tactics',
+    description: 'Operational protocols and tactical insertion strategies for the Special Boat Service (SBS), including maritime counter-terrorism.',
+    category: 'Combat Systems',
+    difficulty: 'advanced',
+    thumbnail_url: null,
+    author_id: 2,
+    status: 'published',
+    created_at: new Date().toISOString(),
+    author: { id: 2, full_name: 'Commodore Adebayo Balogun', rank: 'Commodore' },
+    lessons: [
+      {
+        id: 204,
+        course_id: 103,
+        title: 'Special Boat Service Operations',
+        content: 'Special Boat Service (SBS) operations require meticulous navigation, watermanship, and close combat skills. This module covers silent beach landings and target reconnaissance.',
+        video_url: null,
+        duration_minutes: 30,
+        order_index: 1
+      }
+    ]
+  },
+  {
+    id: 104,
+    title: 'Naval Communications & Signal Encryption',
+    description: 'Advanced radio wave propagation, military satellite communication, and secure signal encryption key distribution protocols.',
+    category: 'Combat Systems',
+    difficulty: 'advanced',
+    thumbnail_url: null,
+    author_id: 2,
+    status: 'published',
+    created_at: new Date().toISOString(),
+    author: { id: 2, full_name: 'Commodore Adebayo Balogun', rank: 'Commodore' },
+    lessons: [
+      {
+        id: 205,
+        course_id: 104,
+        title: 'Military Radio Operations',
+        content: 'HF, VHF, and UHF spectrums form the backbone of naval radio communication. Secure operations require strict signal hygiene and regular frequency shifts.',
+        video_url: null,
+        duration_minutes: 20,
+        order_index: 1
+      }
+    ]
+  },
+  {
+    id: 105,
+    title: 'Oceanography & Marine Meteorology',
+    description: 'Study of ocean currents, wave heights, and weather forecasting methodologies for planning safe sea maneuvers and naval landing operations.',
+    category: 'Navigation',
+    difficulty: 'intermediate',
+    thumbnail_url: null,
+    author_id: 1,
+    status: 'published',
+    created_at: new Date().toISOString(),
+    author: { id: 1, full_name: 'Captain Kelechi Amadi', rank: 'Captain' },
+    lessons: [
+      {
+        id: 206,
+        course_id: 105,
+        title: 'Ocean Currents & Bathymetry',
+        content: 'Ocean currents and bathymetry data affect ship drift, propulsion efficiency, and sonar performance. Modern surveyors must master multi-beam echo sounding.',
+        video_url: null,
+        duration_minutes: 25,
+        order_index: 1
+      }
+    ]
+  },
+  {
+    id: 106,
+    title: 'Marine Gas Turbine Engines & Maintenance',
+    description: 'Technical instruction on operational cycles, compressor wash procedures, and fuel nozzle calibrations for shipboard LM2500 gas turbines.',
+    category: 'Engineering',
+    difficulty: 'advanced',
+    thumbnail_url: null,
+    author_id: 1,
+    status: 'published',
+    created_at: new Date().toISOString(),
+    author: { id: 1, full_name: 'Captain Kelechi Amadi', rank: 'Captain' },
+    lessons: [
+      {
+        id: 207,
+        course_id: 106,
+        title: 'LM2500 Turbine Systems Overview',
+        content: 'LM2500 gas turbines deliver high-density propulsion. Proper upkeep requires daily pressure checks, stator vane inspection, and nozzle cleaning.',
+        video_url: null,
+        duration_minutes: 35,
+        order_index: 1
+      }
+    ]
   }
 ];
 
 export async function GET(req: NextRequest) {
   try {
-    const profile = await requireProfile(req);
-    if (!profile) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
     const { searchParams } = req.nextUrl;
     const enrolled = searchParams.get('enrolled');
     const category = searchParams.get('category');
     const id = searchParams.get('id');
+
+    let profile = null;
+    try {
+      profile = await requireProfile(req);
+    } catch (e) {
+      // Ignore auth error for public requests
+    }
+
+    if (enrolled === 'true' && !profile) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
     // 1. Fetch single course details (with lessons/quizzes)
     if (id) {
@@ -180,6 +280,9 @@ export async function GET(req: NextRequest) {
 
     // 2. Fetch enrolled courses
     if (enrolled === 'true') {
+      if (!profile) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
       const { data: enrollments, error: enrError } = await supabase
         .from('enrollments')
         .select('*')
@@ -229,10 +332,15 @@ export async function GET(req: NextRequest) {
     const { data: dbCourses, error: listError } = await query;
     if (listError || !dbCourses || dbCourses.length === 0) {
       // Fallback to mock courses
-      let filteredMock = MOCK_COURSES;
+      let filteredMock = [...MOCK_COURSES];
       if (category) {
         filteredMock = MOCK_COURSES.filter(c => c.category === category);
       }
+      filteredMock.sort((a: any, b: any) => {
+        const timeA = new Date(a.updated_at || a.created_at || 0).getTime();
+        const timeB = new Date(b.updated_at || b.created_at || 0).getTime();
+        return timeB - timeA;
+      });
       return NextResponse.json(filteredMock);
     }
 
@@ -251,9 +359,28 @@ export async function GET(req: NextRequest) {
     }
     const profileMap = new Map(profiles.map(p => [p.id, p]));
 
+    // Fetch lessons in JS to get the count
+    const courseIds = dbCourses.map(c => c.id);
+    let lessons: any[] = [];
+    if (courseIds.length > 0) {
+      const { data: lesData } = await supabase
+        .from('lessons')
+        .select('id, course_id')
+        .in('course_id', courseIds);
+      lessons = lesData || [];
+    }
+
     const coursesWithAuthors = dbCourses.map(c => {
       const author = profileMap.get(c.author_id) || null;
-      return { ...c, author };
+      const courseLessons = lessons.filter(l => l.course_id === c.id);
+      return { ...c, author, lessons: courseLessons };
+    });
+
+    // Sort by updated_at || created_at descending
+    coursesWithAuthors.sort((a: any, b: any) => {
+      const timeA = new Date(a.updated_at || a.created_at || 0).getTime();
+      const timeB = new Date(b.updated_at || b.created_at || 0).getTime();
+      return timeB - timeA;
     });
 
     return NextResponse.json(coursesWithAuthors);
@@ -268,7 +395,7 @@ export async function POST(req: NextRequest) {
     const profile = await requireProfile(req);
     if (!profile) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    if (!profile.is_content_contributor && profile.role !== 'admin') {
+    if (!profile.is_content_contributor && profile.role !== 'admin' && !profile.can_manage_courses) {
       return NextResponse.json({ error: 'Only approved content contributors can create courses' }, { status: 403 });
     }
 
@@ -357,7 +484,6 @@ export async function PUT(req: NextRequest) {
   try {
     const profile = await requireProfile(req);
     if (!profile) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    if (profile.role !== 'admin') return NextResponse.json({ error: 'Only admins can approve/reject courses' }, { status: 403 });
 
     const { searchParams } = req.nextUrl;
     const action = searchParams.get('action');
@@ -365,23 +491,210 @@ export async function PUT(req: NextRequest) {
     const body = await req.json();
     const { id } = body;
 
-    let statusUpdate = 'pending';
-    if (action === 'approve') statusUpdate = 'published';
-    else if (action === 'reject') statusUpdate = 'rejected';
-    else return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+    if (!id) {
+      return NextResponse.json({ error: 'Missing course ID' }, { status: 400 });
+    }
 
-    const { data: course, error } = await supabase
-      .from('courses')
-      .update({ status: statusUpdate })
-      .eq('id', id)
-      .select()
-      .single();
-    if (error) throw error;
+    if (action === 'approve' || action === 'reject') {
+      if (profile.role !== 'admin') return NextResponse.json({ error: 'Only admins can approve/reject courses' }, { status: 403 });
 
-    await logAudit(profile.id, `${action}_course`, 'course', String(id), `Course status set to: ${statusUpdate}`);
+      let statusUpdate = 'pending';
+      if (action === 'approve') statusUpdate = 'published';
+      else if (action === 'reject') statusUpdate = 'rejected';
+
+      const { data: course, error } = await supabase
+        .from('courses')
+        .update({ status: statusUpdate })
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw error;
+
+      await logAudit(profile.id, `${action}_course`, 'course', String(id), `Course status set to: ${statusUpdate}`);
+      return NextResponse.json(course);
+    }
+
+    // General course editing
+    if (!profile.is_content_contributor && profile.role !== 'admin' && !profile.can_manage_courses) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const { title, description, category, difficulty, thumbnail_url, lessons, status } = body;
+
+    // Update course metadata
+    const updates: any = {};
+    if (title !== undefined) updates.title = title;
+    if (description !== undefined) updates.description = description;
+    if (category !== undefined) updates.category = category;
+    if (difficulty !== undefined) updates.difficulty = difficulty;
+    if (thumbnail_url !== undefined) updates.thumbnail_url = thumbnail_url;
+    if (status !== undefined) updates.status = status;
+
+    const updatesWithTime = {
+      ...updates,
+      updated_at: new Date().toISOString()
+    };
+
+    let course: any = null;
+    let courseError: any = null;
+
+    try {
+      const { data, error } = await supabase
+        .from('courses')
+        .update(updatesWithTime)
+        .eq('id', id)
+        .select()
+        .single();
+      course = data;
+      courseError = error;
+
+      // Check if error is due to missing updated_at column
+      if (error && (error.message?.includes('column "updated_at"') || String(error.code) === '42703')) {
+        console.warn('updated_at column not found on courses table, retrying update without it.');
+        const retry = await supabase
+          .from('courses')
+          .update(updates)
+          .eq('id', id)
+          .select()
+          .single();
+        course = retry.data;
+        courseError = retry.error;
+      }
+    } catch (err: any) {
+      console.warn('Exception during update with updated_at, retrying without it:', err);
+      const retry = await supabase
+        .from('courses')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+      course = retry.data;
+      courseError = retry.error;
+    }
+
+    if (courseError) throw courseError;
+
+    // If lessons array is provided, replace lessons structure
+    if (lessons && Array.isArray(lessons)) {
+      // 1. Fetch current lessons to get their IDs for quiz cleanup
+      const { data: oldLessons } = await supabase
+        .from('lessons')
+        .select('id')
+        .eq('course_id', id);
+
+      const oldLessonIds = (oldLessons || []).map(l => l.id);
+
+      if (oldLessonIds.length > 0) {
+        // Fetch quizzes for those lessons
+        const { data: oldQuizzes } = await supabase
+          .from('quizzes')
+          .select('id')
+          .in('lesson_id', oldLessonIds);
+        const oldQuizIds = (oldQuizzes || []).map(q => q.id);
+
+        if (oldQuizIds.length > 0) {
+          // Delete old quiz questions
+          await supabase.from('quiz_questions').delete().in('quiz_id', oldQuizIds);
+          // Delete old quizzes
+          await supabase.from('quizzes').delete().in('id', oldQuizIds);
+        }
+
+        // Delete old lessons
+        await supabase.from('lessons').delete().eq('course_id', id);
+      }
+
+      // 2. Re-insert new lessons
+      for (let i = 0; i < lessons.length; i++) {
+        const les = lessons[i];
+        const { data: dbLesson, error: lesError } = await supabase
+          .from('lessons')
+          .insert({
+            course_id: id,
+            title: les.title,
+            content: les.content,
+            video_url: les.video_url || null,
+            duration_minutes: les.duration_minutes || 10,
+            order_index: i + 1,
+            section_title: les.section_title || 'General',
+            lesson_type: les.lesson_type || 'text',
+            resources: les.resources || null
+          })
+          .select()
+          .single();
+        if (lesError) throw lesError;
+
+        // Create quizzes if provided
+        if (les.quizzes && Array.isArray(les.quizzes)) {
+          for (const q of les.quizzes) {
+            const { data: dbQuiz, error: qError } = await supabase
+              .from('quizzes')
+              .insert({
+                lesson_id: dbLesson.id,
+                title: q.title,
+                passing_score: q.passing_score || 70,
+                time_limit_minutes: q.time_limit_minutes || null,
+                max_retakes: q.max_retakes || null,
+              })
+              .select()
+              .single();
+            if (qError) throw qError;
+
+            // Create questions if provided
+            if (q.questions && Array.isArray(q.questions)) {
+              for (const ques of q.questions) {
+                await supabase
+                  .from('quiz_questions')
+                  .insert({
+                    quiz_id: dbQuiz.id,
+                    question: ques.question,
+                    type: ques.type || 'multiple_choice',
+                    options: ques.options || null,
+                    correct_index: ques.correct_index !== undefined ? ques.correct_index : null,
+                    correct_short_answer: ques.correct_short_answer || null,
+                  });
+              }
+            }
+          }
+        }
+      }
+    }
+
+    await logAudit(profile.id, 'edit_course', 'course', String(id), `Updated course details`);
     return NextResponse.json(course);
   } catch (err: any) {
     console.error('Courses PUT error:', err);
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const profile = await requireProfile(req);
+    if (!profile) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (profile.role !== 'admin' && !profile.can_manage_courses) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const { searchParams } = req.nextUrl;
+    const id = searchParams.get('id');
+    if (!id) return NextResponse.json({ error: 'Missing course ID' }, { status: 400 });
+
+    const courseId = Number(id);
+
+    // Delete lessons first
+    await supabase.from('lessons').delete().eq('course_id', courseId);
+
+    // Delete course
+    const { error } = await supabase
+      .from('courses')
+      .delete()
+      .eq('id', courseId);
+    if (error) throw error;
+
+    await logAudit(profile.id, 'delete_course', 'course', String(courseId), `Deleted course ID: ${courseId}`);
+    return NextResponse.json({ success: true });
+  } catch (err: any) {
+    console.error('Courses DELETE error:', err);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

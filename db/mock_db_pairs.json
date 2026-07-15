@@ -31,7 +31,7 @@
     "menteeId": "user-mentee-3",
     "mentorId": "user-mentor-1",
     "matchScore": 95,
-    "status": "PENDING",
+    "status": "ACTIVE",
     "matchReason": "High correlation in coastal watchkeeping objectives.",
     "createdAt": "2026-06-22T13:16:07.657Z"
   },
@@ -43,5 +43,14 @@
     "status": "REJECTED",
     "matchReason": "Mismatched command location and availability schedule.",
     "createdAt": "2026-06-14T13:16:07.657Z"
+  },
+  {
+    "id": "pair-697",
+    "menteeId": "user-mentee-3",
+    "mentorId": "user-mentor-1",
+    "matchScore": 90,
+    "status": "ACTIVE",
+    "matchReason": "New request",
+    "createdAt": "2026-07-10T09:06:06.310Z"
   }
 ]

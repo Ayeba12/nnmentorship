@@ -1,0 +1,27 @@
+- `[x]` Implement Upcoming vs. Past Archive tabs in `app/(public)/events/page.tsx`
+- `[x]` Implement Neomorphic Countdown and 15-min reveal in `app/(public)/events/[id]/page.tsx`
+- `[x]` Implement Neomorphic Countdown and 15-min reveal in `app/dashboard/events/[id]/page.tsx`
+- `[x]` Add Register button on desktop navbar when user is not authenticated in `app/(public)/layout.tsx`
+- `[x]` Create dedicated "Upcoming Mentorship Sessions & Events" section below hero section on landing page
+- `[x]` Resolve navbar responsiveness by adjusting mobile menu breakpoint to 1200px in `app/(public)/layout.tsx`
+- `[x]` Enhance layout of Privacy Policy page using sticky sidebar and design system tokens in `app/(public)/privacy/page.tsx`
+- `[x]` Enhance layout of Cookie Policy page using sticky sidebar and categorized cards in `app/(public)/cookies/page.tsx`
+- `[x]` Create new design-system aligned Terms & Conditions page in `app/(public)/terms/page.tsx`
+- `[x]` Bind homepage events section layout to design system's responsive `.grid-col-3` class (exactly 3 columns on desktop, 2 on tablet, 1 on mobile)
+- `[x]` Switch homepage, events directory, and event details page to retrieve data using the `api` client (enforces `cache: 'no-store'` and forwards authentication tokens)
+- `[x]` Fixed runtime `TypeError` on splitting undefined user name inside `components/Layout.tsx`, `app/dashboard/page.tsx`, and `app/dashboard/messages/page.tsx`
+- `[x]` Resolved admin dashboard redirection so admin users can view the main `/dashboard` landing metrics and pending approval alerts
+- `[x]` Created reusable, responsive `Pagination` component in `components/ui.tsx`
+- `[x]` Paginated the **All Users** and **Audit Log** tabs inside the Admin Console dashboard `app/dashboard/admin/page.tsx`
+- `[x]` Paginated the library catalog grid view in the Library dashboard `app/dashboard/library/page.tsx`
+- `[x]` Paginated the articles grid listing view in the Blog dashboard `app/dashboard/blog/page.tsx`
+- `[x]` Paginated the browse-all mentors grid in the Mentors Directory dashboard `app/dashboard/mentors/page.tsx`
+- `[x]` Paginated the past sessions history list view in the Sessions dashboard `app/dashboard/sessions/page.tsx`
+- `[x]` Map `announcements` and `notifications` tables in mock Supabase database client `lib/supabase.ts` (GET, POST, PUT, DELETE)
+- `[x]` Setup client API route handlers for announcements (`/api/announcements`) and notifications (`/api/notifications`)
+- `[x]` Implement Admin announcements creation form, audience selection, and history list in `app/dashboard/admin/page.tsx`
+- `[x]` Update main header navbar notifications bell dropdown to load unread counts and notifications list dynamically with read updates
+- `[x]` Update other accounts (Mentees/Mentors/Admins) dashboard to fetch and display the latest announcement banner matching user's role
+- `[x]` Dynamically wire the main notifications page `app/dashboard/notifications/page.tsx` to database endpoints
+- `[x]` Run build compiler check (`npm run build`)
+- `[x]` Update walkthrough report and verify responsiveness

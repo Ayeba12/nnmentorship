@@ -54,6 +54,8 @@ export interface Goal {
   pairId: string;
   title: string;
   status: "PENDING" | "IN_PROGRESS" | "COMPLETED";
+  menteeId?: string;
+  mentorId?: string;
 }
 
 export interface AuditLog {
@@ -73,6 +75,7 @@ export interface BlogArticle {
   tags: string[];
   status: "DRAFT" | "PENDING" | "APPROVED" | "REJECTED";
   createdAt: string;
+  coverImage?: string | null;
 }
 
 export interface Course {
@@ -735,6 +738,68 @@ const INITIAL_COMPLETIONS: UserCourseCompletion[] = [
   }
 ];
 
+export interface Announcement {
+  id: string;
+  title: string;
+  content: string;
+  targetRole: "ALL" | "MENTOR" | "MENTEE" | "ADMIN";
+  createdAt: string;
+  senderName: string;
+}
+
+export interface Notification {
+  id: string;
+  userId: string;
+  type: "request" | "session" | "course" | "system" | "announcement";
+  title: string;
+  message: string;
+  time: string;
+  read: boolean;
+  link: string;
+}
+
+const INITIAL_ANNOUNCEMENTS: Announcement[] = [
+  {
+    id: "ann-1",
+    title: "Naval Mentorship Portal Launch",
+    content: "Welcome to the official Nigerian Navy Mentorship Platform. Connect with seasoned senior officers and advance your naval career path.",
+    targetRole: "ALL",
+    createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+    senderName: "Naval Administrator"
+  },
+  {
+    id: "ann-2",
+    title: "Quarterly Performance Audits",
+    content: "All mentors are kindly requested to verify and update their scheduled availability intervals to align with command timetables.",
+    targetRole: "MENTOR",
+    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    senderName: "Naval Administrator"
+  }
+];
+
+const INITIAL_NOTIFICATIONS: Notification[] = [
+  {
+    id: "notif-1",
+    userId: "user-mentee-1",
+    type: "system",
+    title: "Profile Verified",
+    message: "Your service records have been verified by the Naval Administrator. You now have full dashboard access.",
+    time: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
+    read: false,
+    link: "/dashboard/profile"
+  },
+  {
+    id: "notif-2",
+    userId: "user-mentor-active-1",
+    type: "request",
+    title: "New Pairing Request",
+    message: "Cadet Yusuf Sani submitted a pairing request to you. Review his profile and credentials.",
+    time: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+    read: false,
+    link: "/dashboard/requests"
+  }
+];
+
 export class MockDatabase {
   private static getKey(key: string): string {
     return `nn_mentorship_${key}`;
@@ -801,6 +866,14 @@ export class MockDatabase {
           this.save("library_books", INITIAL_BOOKS);
           this.save("course_completions", INITIAL_COMPLETIONS);
         }
+        const filePathAnn = path.join(dbDir, 'mock_db_announcements.json');
+        if (!fs.existsSync(filePathAnn)) {
+          this.save("announcements", INITIAL_ANNOUNCEMENTS);
+        }
+        const filePathNotif = path.join(dbDir, 'mock_db_notifications.json');
+        if (!fs.existsSync(filePathNotif)) {
+          this.save("notifications", INITIAL_NOTIFICATIONS);
+        }
       } catch (e) {
         console.error('Server DB initialize error:', e);
       }
@@ -819,11 +892,19 @@ export class MockDatabase {
       this.save("courses", INITIAL_COURSES);
       this.save("library_books", INITIAL_BOOKS);
       this.save("course_completions", INITIAL_COMPLETIONS);
+      this.save("announcements", INITIAL_ANNOUNCEMENTS);
+      this.save("notifications", INITIAL_NOTIFICATIONS);
     } else {
       // Sync latest courses if counts differ
       const existingCourses = localStorage.getItem(this.getKey("courses"));
       if (!existingCourses || JSON.parse(existingCourses).length < 5) {
         this.save("courses", INITIAL_COURSES);
+      }
+      if (!localStorage.getItem(this.getKey("announcements"))) {
+        this.save("announcements", INITIAL_ANNOUNCEMENTS);
+      }
+      if (!localStorage.getItem(this.getKey("notifications"))) {
+        this.save("notifications", INITIAL_NOTIFICATIONS);
       }
     }
   }
@@ -1208,5 +1289,86 @@ export class MockDatabase {
     } else {
       localStorage.removeItem("nn_active_user_id");
     }
+  }
+
+  // Announcements
+  public static getAnnouncements(): Announcement[] {
+    return this.load("announcements", INITIAL_ANNOUNCEMENTS);
+  }
+
+  public static saveAnnouncements(announcements: Announcement[]): void {
+    this.save("announcements", announcements);
+  }
+
+  public static createAnnouncement(title: string, content: string, targetRole: Announcement["targetRole"], senderName: string): Announcement {
+    const announcements = this.getAnnouncements();
+    const newAnn: Announcement = {
+      id: `ann-${Date.now()}`,
+      title,
+      content,
+      targetRole,
+      createdAt: new Date().toISOString(),
+      senderName,
+    };
+    announcements.unshift(newAnn);
+    this.saveAnnouncements(announcements);
+
+    // Also trigger system notifications for target users!
+    const users = this.getUsers();
+    const notifications = this.getNotifications();
+    users.forEach((u) => {
+      let mappedRole: "ALL" | "MENTOR" | "MENTEE" | "ADMIN" = "ALL";
+      if (u.role === "MENTOR_ACTIVE" || u.role === "MENTOR_RETIRED") {
+        mappedRole = "MENTOR";
+      } else if (u.role === "MENTEE") {
+        mappedRole = "MENTEE";
+      } else if (u.role === "ADMIN") {
+        mappedRole = "ADMIN";
+      }
+
+      if (targetRole === "ALL" || mappedRole === targetRole) {
+        notifications.unshift({
+          id: `notif-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+          userId: u.id,
+          type: "announcement",
+          title: `Announcement: ${title}`,
+          message: content,
+          time: new Date().toISOString(),
+          read: false,
+          link: "/dashboard/notifications",
+        });
+      }
+    });
+    this.saveNotifications(notifications);
+
+    this.addAuditLog(`General announcement posted: '${title}'`, senderName);
+
+    return newAnn;
+  }
+
+  // Notifications
+  public static getNotifications(): Notification[] {
+    return this.load("notifications", INITIAL_NOTIFICATIONS);
+  }
+
+  public static saveNotifications(notifications: Notification[]): void {
+    this.save("notifications", notifications);
+  }
+
+  public static createNotification(userId: string, type: Notification["type"], title: string, message: string, link: string): Notification {
+    const notifications = this.getNotifications();
+    const newNotif: Notification = {
+      id: `notif-${Date.now()}`,
+      userId,
+      type,
+      title,
+      message,
+      time: new Date().toISOString(),
+      read: false,
+      link,
+    };
+    notifications.unshift(newNotif);
+    this.saveNotifications(notifications);
+    return newNotif;
   }
 }

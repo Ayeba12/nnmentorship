@@ -20,6 +20,9 @@ export interface Lesson {
   video_url: string | null;
   duration_minutes: number;
   order_index: number;
+  section_title?: string | null;
+  lesson_type?: 'video' | 'text' | 'quiz' | 'assignment' | null;
+  resources?: { title: string; url: string }[] | null;
   quizzes?: Quiz[];
 }
 
@@ -28,6 +31,8 @@ export interface Quiz {
   lesson_id: number;
   title: string;
   passing_score: number;
+  time_limit_minutes?: number | null;
+  max_retakes?: number | null;
   questions?: QuizQuestion[];
 }
 
@@ -35,8 +40,10 @@ export interface QuizQuestion {
   id: number;
   quiz_id: number;
   question: string;
-  options: string[];
-  correct_index: number;
+  type?: 'multiple_choice' | 'short_answer';
+  options?: string[] | null;
+  correct_index?: number | null;
+  correct_short_answer?: string | null;
 }
 
 export interface Enrollment {

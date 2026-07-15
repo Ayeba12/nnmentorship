@@ -1,0 +1,17 @@
+{
+  "skill_name": "system-design",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "We need to build a system for dispatching real-time notifications and daily digest emails to users when mentors accept requests, schedule sessions, or post new blog articles. The system must remain highly performant and responsive even if the email delivery provider is slow or temporarily down. Describe the architecture, communication protocols, database schema, and scaling strategy.",
+      "expected_output": "An architecture utilizing a message queue (e.g. Redis, RabbitMQ) to decouple requests, TCP/HTTP protocol, event tracking schemas, and scaling suggestions.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Our mentor search directory is experiencing slow loading times under high user traffic due to heavy DB lookups on search filters (branch, rank, specialization). Describe a caching strategy, eviction policy, cache update pattern, and secondary indexing plan to resolve this.",
+      "expected_output": "A caching solution (Cache-aside strategy with Redis), eviction policy (LRU), update pattern, and database indexing recommendation on specific tables.",
+      "files": []
+    }
+  ]
+}

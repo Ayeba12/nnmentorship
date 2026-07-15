@@ -237,10 +237,11 @@ export function Modal({ open, onClose, title, children, size = 'md' }: { open: b
 }
 
 // ---------- Avatar ----------
-export function Avatar({ name, src, size = 'md' }: { name: string; src?: string | null; size?: 'sm' | 'md' | 'lg' | 'xl' }) {
+export function Avatar({ name, src, size = 'md' }: { name?: string | null; src?: string | null; size?: 'sm' | 'md' | 'lg' | 'xl' }) {
   const sizes: Record<string, string> = { sm: 'w-8 h-8 text-xs', md: 'w-10 h-10 text-sm', lg: 'w-14 h-14 text-lg', xl: 'w-20 h-20 text-2xl' };
-  const initials = name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
-  if (src) return <img src={src} alt={name} className={`${sizes[size]} rounded-full object-cover ring-2 ring-white shadow-soft`} />;
+  const safeName = name || 'User';
+  const initials = safeName.split(' ').filter(Boolean).map(n => n[0]).slice(0, 2).join('').toUpperCase();
+  if (src) return <img src={src} alt={safeName} className={`${sizes[size]} rounded-full object-cover ring-2 ring-white shadow-soft`} />;
   return (
     <div className={`${sizes[size]} rounded-full bg-gradient-to-br from-navy-600 to-navy-800 text-white flex items-center justify-center font-semibold flex-shrink-0 ring-2 ring-white shadow-soft`}>
       {initials}
@@ -322,6 +323,79 @@ export function SectionTitle({ children, icon, action }: { children: ReactNode; 
         <h2 className="font-bold text-navy-800">{children}</h2>
       </div>
       {action}
+    </div>
+  );
+}
+
+// ---------- Pagination ----------
+export function Pagination({ currentPage, totalPages, onPageChange }: { currentPage: number; totalPages: number; onPageChange: (page: number) => void }) {
+  if (totalPages <= 1) return null;
+
+  const pages = [];
+  for (let i = 1; i <= totalPages; i++) {
+    pages.push(i);
+  }
+
+  return (
+    <div className="flex items-center justify-between border-t border-navy-100/50 px-4 py-3 sm:px-6 mt-4">
+      <div className="flex flex-1 justify-between sm:hidden">
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={currentPage === 1}
+          onClick={() => onPageChange(currentPage - 1)}
+        >
+          Previous
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={currentPage === totalPages}
+          onClick={() => onPageChange(currentPage + 1)}
+        >
+          Next
+        </Button>
+      </div>
+      <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+        <div>
+          <p className="text-xs text-navy-400">
+            Showing Page <span className="font-semibold text-navy-800">{currentPage}</span> of{' '}
+            <span className="font-semibold text-navy-800">{totalPages}</span>
+          </p>
+        </div>
+        <div>
+          <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+            <button
+              disabled={currentPage === 1}
+              onClick={() => onPageChange(currentPage - 1)}
+              className="relative inline-flex items-center rounded-l-md px-2.5 py-1.5 text-navy-400 ring-1 ring-inset ring-navy-200/50 hover:bg-navy-50 focus:z-20 focus:outline-offset-0 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-xs"
+            >
+              Previous
+            </button>
+            {pages.map((p) => (
+              <button
+                key={p}
+                onClick={() => onPageChange(p)}
+                aria-current={p === currentPage ? 'page' : undefined}
+                className={`relative inline-flex items-center px-3 py-1.5 text-xs font-semibold ring-1 ring-inset ring-navy-200/50 focus:z-20 focus:outline-offset-0 transition-all ${
+                  p === currentPage
+                    ? 'z-10 bg-navy-500 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy-600'
+                    : 'text-navy-700 hover:bg-navy-50'
+                }`}
+              >
+                {p}
+              </button>
+            ))}
+            <button
+              disabled={currentPage === totalPages}
+              onClick={() => onPageChange(currentPage + 1)}
+              className="relative inline-flex items-center rounded-r-md px-2.5 py-1.5 text-navy-400 ring-1 ring-inset ring-navy-200/50 hover:bg-navy-50 focus:z-20 focus:outline-offset-0 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-xs"
+            >
+              Next
+            </button>
+          </nav>
+        </div>
+      </div>
     </div>
   );
 }

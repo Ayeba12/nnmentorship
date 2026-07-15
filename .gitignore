@@ -23,6 +23,7 @@
 # misc
 .DS_Store
 *.pem
+Thumbs.db
 
 # debug
 npm-debug.log*
@@ -30,8 +31,9 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files (secrets must NEVER be committed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -39,3 +41,24 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Sentry
+.sentryclirc
+
+# Local uploads (user-generated content stored in cloud storage in production)
+public/uploads/
+
+# Local mock database files (production uses Supabase)
+db/*.json
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+Desktop.ini
+
+# Legacy backup files
+legacy_backup/

@@ -48,8 +48,12 @@ const MOCK_POSTS = [
 
 export async function GET(req: NextRequest) {
   try {
-    const profile = await requireProfile(req);
-    if (!profile) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    let profile = null;
+    try {
+      profile = await requireProfile(req);
+    } catch (e) {
+      // Ignore auth error for public requests
+    }
 
     const { searchParams } = req.nextUrl;
     const category = searchParams.get('category');
@@ -75,8 +79,44 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: 'Post not found' }, { status: 404 });
       }
 
+      // Fetch author in JS if missing (mock DB failover)
+      if (!dbPost.author && dbPost.author_id) {
+        const { data: auth } = await supabase
+          .from('profiles')
+          .select('id, full_name, rank, avatar_url')
+          .eq('id', dbPost.author_id)
+          .single();
+        dbPost.author = auth || null;
+      }
+
+      // Fetch comments in JS if missing (mock DB failover)
+      if (!dbPost.comments) {
+        const { data: comments } = await supabase
+          .from('blog_comments')
+          .select('*')
+          .eq('post_id', postId);
+        
+        let commentsList = comments || [];
+        // Fetch users for comments
+        const userIds = Array.from(new Set(commentsList.map(c => c.user_id).filter(Boolean)));
+        let commentUsers: any[] = [];
+        if (userIds.length > 0) {
+          const { data: users } = await supabase
+            .from('profiles')
+            .select('id, full_name, rank, avatar_url')
+            .in('id', userIds);
+          commentUsers = users || [];
+        }
+        const userMap = new Map(commentUsers.map(u => [u.id, u]));
+
+        dbPost.comments = commentsList.map(c => ({
+          ...c,
+          user: userMap.get(c.user_id) || null
+        }));
+      }
+
       // Filter approved comments for non-admins
-      if (dbPost.comments && profile.role !== 'admin') {
+      if (dbPost.comments && (!profile || profile.role !== 'admin')) {
         dbPost.comments = dbPost.comments.filter((c: any) => c.status === 'approved');
       }
 
@@ -103,7 +143,27 @@ export async function GET(req: NextRequest) {
       return NextResponse.json(filteredMock);
     }
 
-    return NextResponse.json(dbPosts);
+    // Ensure authors are populated (critical for mock database failover)
+    const postsWithAuthors = [];
+    const authorIds = Array.from(new Set(dbPosts.map(p => p.author_id).filter(Boolean)));
+    let profiles: any[] = [];
+    if (authorIds.length > 0) {
+      const { data: profs } = await supabase
+        .from('profiles')
+        .select('id, full_name, rank, avatar_url')
+        .in('id', authorIds);
+      profiles = profs || [];
+    }
+    const profileMap = new Map(profiles.map(p => [p.id, p]));
+
+    for (const post of dbPosts) {
+      if (!post.author) {
+        post.author = profileMap.get(post.author_id) || null;
+      }
+      postsWithAuthors.push(post);
+    }
+
+    return NextResponse.json(postsWithAuthors);
   } catch (err: any) {
     console.error('Blog GET error:', err);
     return NextResponse.json({ error: err.message }, { status: 500 });
@@ -115,7 +175,7 @@ export async function POST(req: NextRequest) {
     const profile = await requireProfile(req);
     if (!profile) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    if (!profile.is_content_contributor && profile.role !== 'admin') {
+    if (!profile.is_content_contributor && profile.role !== 'admin' && !profile.can_manage_blog) {
       return NextResponse.json({ error: 'Only approved content contributors can create posts' }, { status: 403 });
     }
 
@@ -165,6 +225,15 @@ export async function PUT(req: NextRequest) {
     const body = await req.json();
     const { id } = body;
 
+    // Verify ownership or management permissions for editing
+    const { data: postToCheck } = await supabase.from('blog_posts').select('author_id').eq('id', id).single();
+    const isAuthor = postToCheck && postToCheck.author_id === profile.id;
+    const hasCMSPermission = profile.role === 'admin' || profile.can_manage_blog || profile.is_content_contributor;
+
+    if (!isAuthor && !hasCMSPermission) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const updateData: any = {};
     if (action === 'submit') {
       updateData.status = 'pending_review';
@@ -202,6 +271,44 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json(post);
   } catch (err: any) {
     console.error('Blog PUT error:', err);
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const profile = await requireProfile(req);
+    if (!profile) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const { searchParams } = req.nextUrl;
+    const id = searchParams.get('id');
+    if (!id) return NextResponse.json({ error: 'Missing post ID' }, { status: 400 });
+
+    const postId = Number(id);
+
+    // Verify ownership or management permissions
+    const { data: postToCheck } = await supabase.from('blog_posts').select('author_id').eq('id', postId).single();
+    const isAuthor = postToCheck && postToCheck.author_id === profile.id;
+    const hasCMSPermission = profile.role === 'admin' || profile.can_manage_blog;
+
+    if (!isAuthor && !hasCMSPermission) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    // Delete comments first
+    await supabase.from('blog_comments').delete().eq('post_id', postId);
+
+    // Delete blog post
+    const { error } = await supabase
+      .from('blog_posts')
+      .delete()
+      .eq('id', postId);
+    if (error) throw error;
+
+    await logAudit(profile.id, 'delete_blog_post', 'blog_post', String(postId), `Deleted post ID: ${postId}`);
+    return NextResponse.json({ success: true });
+  } catch (err: any) {
+    console.error('Blog DELETE error:', err);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

@@ -54,7 +54,9 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = req.nextUrl;
     const category = searchParams.get('category');
-    const search = searchParams.get('search');
+    const search = searchParams.get('q') || searchParams.get('search');
+    const format = searchParams.get('format');
+    const rankLevel = searchParams.get('rank_level');
     const id = searchParams.get('id');
 
     // 1. Fetch single item
@@ -81,6 +83,12 @@ export async function GET(req: NextRequest) {
     if (category) {
       query = query.eq('category', category);
     }
+    if (format) {
+      query = query.eq('format', format);
+    }
+    if (rankLevel) {
+      query = query.eq('rank_level', rankLevel);
+    }
     if (search) {
       query = query.ilike('title', `%${search}%`);
     }
@@ -91,6 +99,12 @@ export async function GET(req: NextRequest) {
       let filteredMock = MOCK_LIBRARY;
       if (category) {
         filteredMock = filteredMock.filter(item => item.category === category);
+      }
+      if (format) {
+        filteredMock = filteredMock.filter(item => item.format === format);
+      }
+      if (rankLevel) {
+        filteredMock = filteredMock.filter(item => item.rank_level === rankLevel);
       }
       if (search) {
         filteredMock = filteredMock.filter(item => item.title.toLowerCase().includes(search.toLowerCase()));
@@ -110,7 +124,7 @@ export async function POST(req: NextRequest) {
     const profile = await requireProfile(req);
     if (!profile) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    if (!profile.is_content_contributor && profile.role !== 'admin') {
+    if (!profile.is_content_contributor && profile.role !== 'admin' && !profile.can_manage_library) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -153,12 +167,41 @@ export async function PUT(req: NextRequest) {
     if (!profile) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json();
-    const { id } = body;
+    const { id, title, description, category, format, file_url, external_link, author, rank_level, action } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'Missing parameters' }, { status: 400 });
     }
 
+    // Check if this is a metadata edit or a download increment
+    if (action === 'edit' || title !== undefined || description !== undefined) {
+      if (profile.role !== 'admin' && !profile.can_manage_library && !profile.is_content_contributor) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+
+      const updates: any = {};
+      if (title !== undefined) updates.title = title;
+      if (description !== undefined) updates.description = description;
+      if (category !== undefined) updates.category = category;
+      if (format !== undefined) updates.format = format;
+      if (file_url !== undefined) updates.file_url = file_url;
+      if (external_link !== undefined) updates.external_link = external_link;
+      if (author !== undefined) updates.author = author;
+      if (rank_level !== undefined) updates.rank_level = rank_level;
+
+      const { data: updated, error: editError } = await supabase
+        .from('library_items')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+      if (editError) throw editError;
+
+      await logAudit(profile.id, 'edit_library_item', 'library_item', String(id), `Updated metadata`);
+      return NextResponse.json(updated);
+    }
+
+    // Otherwise, this is a download increment (public)
     // Attempt to increment downloads count in DB
     const { data: item, error } = await supabase.rpc('increment_library_download', { row_id: id });
     
@@ -186,6 +229,34 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json(item || { id });
   } catch (err: any) {
     console.error('Library PUT error:', err);
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const profile = await requireProfile(req);
+    if (!profile) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (profile.role !== 'admin' && !profile.can_manage_library) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const { searchParams } = req.nextUrl;
+    const id = searchParams.get('id');
+    if (!id) return NextResponse.json({ error: 'Missing item ID' }, { status: 400 });
+
+    const itemId = Number(id);
+
+    const { error } = await supabase
+      .from('library_items')
+      .delete()
+      .eq('id', itemId);
+    if (error) throw error;
+
+    await logAudit(profile.id, 'delete_library_item', 'library_item', String(itemId), `Deleted library item: ${itemId}`);
+    return NextResponse.json({ success: true });
+  } catch (err: any) {
+    console.error('Library DELETE error:', err);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

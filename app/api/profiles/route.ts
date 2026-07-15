@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import supabase from '@/lib/supabase';
 import { requireAuth, requireProfile, requireRole, logAudit, getProfile } from '@/lib/api-helpers';
+import { mailer } from '@/lib/mail';
 
 export async function GET(req: NextRequest) {
   try {
@@ -118,6 +119,17 @@ export async function POST(req: NextRequest) {
       .select()
       .single();
     if (error) throw error;
+    
+    // Trigger Welcome Email (wrap in try/catch to ensure API response succeeds even if email service has issues)
+    try {
+      if (data && data.email) {
+        await mailer.sendWelcomeEmail(data.email, data.full_name, data.role);
+        await logAudit(data.id, 'SEND_WELCOME_EMAIL', 'profiles', String(data.id), `Sent welcome email to ${data.email}`);
+      }
+    } catch (mailErr) {
+      console.error('Welcome email sending failed:', mailErr);
+    }
+
     return NextResponse.json(data, { status: 201 });
   } catch (err: any) {
     console.error('Profiles POST error:', err);
@@ -144,6 +156,23 @@ export async function PUT(req: NextRequest) {
       if (error) throw error;
 
       await logAudit(admin.id, verification_status === 'verified' ? 'verify_user' : 'reject_user', 'profile', id, `User ${data.full_name} ${verification_status}`);
+      return NextResponse.json(data);
+    }
+
+    if (action === 'permissions') {
+      const admin = await requireRole(req, ['admin']);
+      if (!admin) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+
+      const { id, can_manage_blog, can_manage_courses, can_manage_library } = await req.json();
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({ can_manage_blog, can_manage_courses, can_manage_library })
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw error;
+
+      await logAudit(admin.id, 'update_user_permissions', 'profile', String(id), `Updated permissions: blog=${can_manage_blog}, courses=${can_manage_courses}, library=${can_manage_library}`);
       return NextResponse.json(data);
     }
 

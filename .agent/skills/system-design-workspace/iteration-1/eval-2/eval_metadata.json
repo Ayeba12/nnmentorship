@@ -1,0 +1,19 @@
+{
+  "eval_id": 2,
+  "eval_name": "mentor-search-caching",
+  "prompt": "Our mentor search directory is experiencing slow loading times under high user traffic due to heavy DB lookups on search filters (branch, rank, specialization). Describe a caching strategy, eviction policy, cache update pattern, and secondary indexing plan to resolve this.",
+  "assertions": [
+    {
+      "text": "The solution explicitly recommends a caching strategy (such as Cache-Aside/Lazy-Loading) using Redis or Memcached."
+    },
+    {
+      "text": "The solution specifies an eviction policy (such as LRU - Least Recently Used)."
+    },
+    {
+      "text": "The solution details cache updates or invalidation triggers (e.g. TTL, write-through, or cache clear on database update)."
+    },
+    {
+      "text": "The solution proposes a secondary indexing plan on specific columns (e.g., branch, rank, specialization) of the profiles table."
+    }
+  ]
+}

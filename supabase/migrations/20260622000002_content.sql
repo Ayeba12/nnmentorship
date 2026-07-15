@@ -10,7 +10,8 @@ CREATE TABLE IF NOT EXISTS public.courses (
     thumbnail_url TEXT,
     author_id BIGINT REFERENCES public.profiles(id) ON DELETE SET NULL,
     status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'published', 'rejected')),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
 -- 2. Create Lessons table
@@ -126,21 +127,98 @@ ALTER TABLE public.blog_posts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.blog_comments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.library_items ENABLE ROW LEVEL SECURITY;
 
--- Create basic access policies (publicly readable content, protected enrollments)
-CREATE POLICY "Public courses are viewable by anyone" ON public.courses FOR SELECT USING (status = 'published');
+-- ===========================================================================
+-- PUBLIC READ POLICIES
+-- ===========================================================================
+
+-- Courses: anyone can view published courses; admins/authors can view all
+CREATE POLICY "Public courses are viewable by anyone" ON public.courses FOR SELECT
+  USING (status = 'published' OR public.is_admin() OR author_id = public.get_my_profile_id());
+
 CREATE POLICY "Public lessons are viewable by anyone" ON public.lessons FOR SELECT USING (true);
 CREATE POLICY "Public quizzes are viewable by anyone" ON public.quizzes FOR SELECT USING (true);
 CREATE POLICY "Public quiz questions are viewable by anyone" ON public.quiz_questions FOR SELECT USING (true);
 
-CREATE POLICY "Users can view and manage their own enrollments" ON public.enrollments FOR ALL USING (auth.uid() IN (SELECT auth_id FROM public.profiles WHERE id = user_id));
+-- Enrollments: users can view/manage their own
+CREATE POLICY "Users can view and manage their own enrollments" ON public.enrollments FOR ALL
+  USING (user_id = public.get_my_profile_id() OR public.is_admin());
 CREATE POLICY "Users can view and manage their own lesson progress" ON public.lesson_progress FOR ALL USING (true);
-CREATE POLICY "Users can view their own certificates" ON public.certificates FOR SELECT USING (auth.uid() IN (SELECT auth_id FROM public.profiles WHERE id = user_id));
+CREATE POLICY "Users can view their own certificates" ON public.certificates FOR SELECT
+  USING (user_id = public.get_my_profile_id() OR public.is_admin());
 
-CREATE POLICY "Published blog posts are viewable by anyone" ON public.blog_posts FOR SELECT USING (status = 'published');
+-- Blog: anyone can view published posts
+CREATE POLICY "Published blog posts are viewable by anyone" ON public.blog_posts FOR SELECT
+  USING (status = 'published' OR public.is_admin() OR author_id = public.get_my_profile_id());
 CREATE POLICY "Approved comments are viewable by anyone" ON public.blog_comments FOR SELECT USING (status = 'approved');
-CREATE POLICY "Users can insert comments" ON public.blog_comments FOR INSERT WITH CHECK (true);
+CREATE POLICY "Users can insert comments" ON public.blog_comments FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
 
+-- Library: anyone can view
 CREATE POLICY "Library items are viewable by anyone" ON public.library_items FOR SELECT USING (true);
+
+-- ===========================================================================
+-- ADMIN & CONTENT CONTRIBUTOR WRITE POLICIES
+-- ===========================================================================
+
+-- Courses: Admins and content contributors can create/update/delete
+CREATE POLICY "Admins can manage courses" ON public.courses FOR ALL
+  USING (public.is_admin());
+CREATE POLICY "Contributors can insert courses" ON public.courses FOR INSERT
+  WITH CHECK (
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = public.get_my_profile_id() AND is_content_contributor = true)
+  );
+CREATE POLICY "Contributors can update own courses" ON public.courses FOR UPDATE
+  USING (author_id = public.get_my_profile_id());
+
+-- Lessons: Admins can manage; contributors can manage lessons of their courses
+CREATE POLICY "Admins can manage lessons" ON public.lessons FOR ALL
+  USING (public.is_admin());
+CREATE POLICY "Contributors can manage own course lessons" ON public.lessons FOR ALL
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.courses c
+      WHERE c.id = lessons.course_id AND c.author_id = public.get_my_profile_id()
+    )
+  );
+
+-- Quizzes: Admins can manage all
+CREATE POLICY "Admins can manage quizzes" ON public.quizzes FOR ALL
+  USING (public.is_admin());
+
+-- Quiz Questions: Admins can manage all
+CREATE POLICY "Admins can manage quiz questions" ON public.quiz_questions FOR ALL
+  USING (public.is_admin());
+
+-- Blog Posts: Admins and content contributors can create/update/delete
+CREATE POLICY "Admins can manage blog posts" ON public.blog_posts FOR ALL
+  USING (public.is_admin());
+CREATE POLICY "Contributors can insert blog posts" ON public.blog_posts FOR INSERT
+  WITH CHECK (
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = public.get_my_profile_id() AND is_content_contributor = true)
+  );
+CREATE POLICY "Contributors can update own blog posts" ON public.blog_posts FOR UPDATE
+  USING (author_id = public.get_my_profile_id());
+
+-- Blog Comments: Admins can manage all
+CREATE POLICY "Admins can manage blog comments" ON public.blog_comments FOR ALL
+  USING (public.is_admin());
+
+-- Library Items: Admins and content contributors can manage
+CREATE POLICY "Admins can manage library items" ON public.library_items FOR ALL
+  USING (public.is_admin());
+CREATE POLICY "Contributors can insert library items" ON public.library_items FOR INSERT
+  WITH CHECK (
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = public.get_my_profile_id() AND is_content_contributor = true)
+  );
+CREATE POLICY "Contributors can update own library items" ON public.library_items FOR UPDATE
+  USING (uploaded_by = public.get_my_profile_id());
+
+-- Certificates: Admins can manage all
+CREATE POLICY "Admins can manage certificates" ON public.certificates FOR ALL
+  USING (public.is_admin());
+
+-- ===========================================================================
+-- READING LISTS
+-- ===========================================================================
 
 -- 11. Create Reading Lists table
 CREATE TABLE IF NOT EXISTS public.reading_lists (
@@ -165,4 +243,22 @@ ALTER TABLE public.reading_list_items ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Reading lists are viewable by anyone" ON public.reading_lists FOR SELECT USING (true);
 CREATE POLICY "Reading list items are viewable by anyone" ON public.reading_list_items FOR SELECT USING (true);
+
+-- Admins can manage reading lists
+CREATE POLICY "Admins can manage reading lists" ON public.reading_lists FOR ALL
+  USING (public.is_admin());
+CREATE POLICY "Contributors can insert reading lists" ON public.reading_lists FOR INSERT
+  WITH CHECK (
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = public.get_my_profile_id() AND is_content_contributor = true)
+  );
+CREATE POLICY "Contributors can update own reading lists" ON public.reading_lists FOR UPDATE
+  USING (curator_id = public.get_my_profile_id());
+
+-- Admins can manage reading list items
+CREATE POLICY "Admins can manage reading list items" ON public.reading_list_items FOR ALL
+  USING (public.is_admin());
+
+-- Library items: authenticated users can update download count
+CREATE POLICY "Authenticated users can increment downloads" ON public.library_items FOR UPDATE
+  USING (auth.uid() IS NOT NULL);
 

@@ -1,5 +1,28 @@
 [
   {
+    "id": "user-admin-demo",
+    "navyId": "NN/0101",
+    "fullName": "Admiral Ibrahim Ola",
+    "email": "admin@navymentor.ng",
+    "rank": "Admiral",
+    "specialization": "Navigation & Operations",
+    "command": "Western Naval Command (Lagos)",
+    "role": "ADMIN",
+    "status": "APPROVED",
+    "bio": "Chief of Naval Staff. Administrative oversight and policy coordinator.",
+    "availabilityScore": 10,
+    "historyScore": 10,
+    "isContentContributor": true,
+    "is_accepting_mentees": true,
+    "max_mentees": 5,
+    "service_branch": "Western",
+    "years_of_service": 10,
+    "career_goals": "",
+    "mentorship_interests": "",
+    "avatar_url": "/uploads/1783967857269-4a90fz.jpeg",
+    "additional_pictures": []
+  },
+  {
     "id": "user-admin-1",
     "navyId": "NN/0101",
     "fullName": "Admiral Ibrahim Ola",
@@ -17,17 +40,23 @@
   {
     "id": "user-mentor-1",
     "navyId": "NN/2542",
-    "fullName": "Captain Kelechi Amadi",
+    "fullName": "Sam Beele",
     "email": "k.amadi@navy.mil.ng",
     "rank": "Captain",
-    "specialization": "Marine Engineering",
-    "command": "Western Naval Command (Lagos)",
+    "specialization": "Operations",
+    "command": "Lagos",
     "role": "MENTOR_ACTIVE",
     "status": "APPROVED",
-    "bio": "Veteran Engineering officer with 25 years afloat experience. Specialist in diesel propulsion and ship refits.",
+    "bio": "good",
     "availabilityScore": 9,
     "historyScore": 10,
-    "isContentContributor": true
+    "isContentContributor": true,
+    "max_mentees": 5,
+    "service_branch": "Operations",
+    "years_of_service": 18,
+    "career_goals": "be better",
+    "mentorship_interests": "love hope",
+    "additional_pictures": []
   },
   {
     "id": "user-mentor-2",
@@ -112,7 +141,11 @@
     "status": "APPROVED",
     "bio": "Sub-lieutenant engineer seeking mentorship in naval auxiliary machinery and dockyard maintenance coordination.",
     "availabilityScore": 0,
-    "historyScore": 0
+    "historyScore": 0,
+    "max_mentees": 5,
+    "years_of_service": 0,
+    "avatar_url": "/uploads/1783968162764-u4nahl.png",
+    "additional_pictures": []
   },
   {
     "id": "user-mentee-2",
@@ -156,5 +189,35 @@
     "availabilityScore": 8,
     "historyScore": 8,
     "isContentContributor": false
+  },
+  {
+    "id": "6718908f-7fd4-41f2-8458-cea9515c63cb",
+    "navyId": "NN/7804",
+    "fullName": "Mentee1",
+    "email": "mentee1@navymentor.ng",
+    "rank": "Captain",
+    "specialization": "Navigation & Operations",
+    "command": "Western Naval Command (Lagos)",
+    "role": "MENTOR_ACTIVE",
+    "status": "APPROVED",
+    "bio": "Auto-generated mock profile.",
+    "availabilityScore": 8,
+    "historyScore": 8,
+    "isContentContributor": false
+  },
+  {
+    "id": "mock-uuid-retired1@navymentor.ng",
+    "navyId": "NN/8178",
+    "fullName": "Retired1",
+    "email": "retired1@navymentor.ng",
+    "rank": "Rear Admiral",
+    "specialization": "Navigation & Operations",
+    "command": "Western Naval Command (Lagos)",
+    "role": "MENTOR_RETIRED",
+    "status": "APPROVED",
+    "bio": "Auto-generated mock profile.",
+    "availabilityScore": 8,
+    "historyScore": 8,
+    "isContentContributor": true
   }
 ]

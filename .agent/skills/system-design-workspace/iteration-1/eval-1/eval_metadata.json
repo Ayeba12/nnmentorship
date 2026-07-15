@@ -1,0 +1,19 @@
+{
+  "eval_id": 1,
+  "eval_name": "notification-system-architecture",
+  "prompt": "We need to build a system for dispatching real-time notifications and daily digest emails to users when mentors accept requests, schedule sessions, or post new blog articles. The system must remain highly performant and responsive even if the email delivery provider is slow or temporarily down. Describe the architecture, communication protocols, database schema, and scaling strategy.",
+  "assertions": [
+    {
+      "text": "The solution explicitly utilizes a message queue or task queue (e.g., Redis, RabbitMQ, Kafka, Celery) to handle asynchronous notification dispatch."
+    },
+    {
+      "text": "The solution specifies database schema tables or event store structures for tracking notifications or pending digest emails."
+    },
+    {
+      "text": "The solution discusses load balancing or queue consumer worker horizontal scaling strategies."
+    },
+    {
+      "text": "The solution covers communication protocols (e.g., HTTP, WebSockets, SMTP, AMQP, gRPC) used between components."
+    }
+  ]
+}

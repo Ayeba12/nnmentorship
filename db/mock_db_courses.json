@@ -1,136 +1,170 @@
 [
   {
-    "id": "course-1",
+    "id": 101,
+    "title": "Naval Leadership & Professional Ethics",
+    "description": "A comprehensive study of military leadership principles, moral ethics, and administrative responsibilities in the Nigerian Navy.",
+    "category": "Leadership",
+    "difficulty": "beginner",
+    "thumbnail_url": "/naval_command_ceremony.png",
+    "author_id": 4,
+    "status": "published",
+    "created_at": "2026-05-15T13:16:07.658Z"
+  },
+  {
+    "id": 102,
+    "title": "Maritime Security and Patrol Operations",
+    "description": "An overview of tactics, regulations, and operational guidelines for combating piracy, oil theft, and illegal fishing in Nigerian territorial waters.",
+    "category": "Operations",
+    "difficulty": "intermediate",
+    "thumbnail_url": "/naval_fleet_operations.png",
+    "author_id": 4,
+    "status": "published",
+    "created_at": "2026-06-04T13:16:07.658Z"
+  },
+  {
+    "id": 103,
+    "title": "Special Naval Warfare & SBS Tactics",
+    "description": "Operational protocols and tactical insertion strategies for the Special Boat Service (SBS), including maritime counter-terrorism.",
+    "category": "Combat Systems",
+    "difficulty": "advanced",
+    "thumbnail_url": "/naval_training_drill.png",
+    "author_id": 3,
+    "status": "published",
+    "created_at": "2026-06-25T13:16:07.658Z"
+  },
+  {
+    "id": 104,
+    "title": "Naval Communications & Signal Encryption",
+    "description": "Advanced radio wave propagation, military satellite communication, and secure signal encryption key distribution protocols.",
+    "category": "Combat Systems",
+    "difficulty": "advanced",
+    "thumbnail_url": "/uploads/1783997925360-rwem47.png",
+    "author_id": 3,
+    "status": "published",
+    "created_at": "2026-06-26T13:16:07.658Z",
+    "updated_at": "2026-07-14T02:58:48.198Z"
+  },
+  {
+    "id": 105,
+    "title": "Oceanography & Marine Meteorology",
+    "description": "Study of ocean currents, wave heights, and weather forecasting methodologies for planning safe sea maneuvers and naval landing operations.",
+    "category": "Navigation",
+    "difficulty": "intermediate",
+    "thumbnail_url": "/uploads/1783997805933-a3s0pt.jpg",
+    "author_id": 2,
+    "status": "published",
+    "created_at": "2026-06-27T13:16:07.658Z",
+    "updated_at": "2026-07-14T02:56:50.428Z"
+  },
+  {
+    "id": 106,
+    "title": "Marine Gas Turbine Engines & Maintenance",
+    "description": "Technical instruction on operational cycles, compressor wash procedures, and fuel nozzle calibrations for shipboard LM2500 gas turbines.",
+    "category": "Engineering",
+    "difficulty": "advanced",
+    "thumbnail_url": "/uploads/1783997774936-gz7xuj.jpg",
+    "author_id": 2,
+    "status": "published",
+    "created_at": "2026-06-28T13:16:07.658Z",
+    "updated_at": "2026-07-14T02:56:17.855Z"
+  },
+  {
+    "id": 107,
     "title": "Officer of the Watch (OOW) Watchkeeping & Seamanship",
     "description": "Essential training module covering radar plotting, collision avoidance regulations (COLREGs), and bridge deck team management.",
-    "instructorId": "user-mentor-3",
-    "instructorName": "Commander Olayemi Cole",
-    "lessons": [
-      "Introduction to Seamanship & Nautical Rules",
-      "COLREGs & Radar Collision Plotting",
-      "Bridge Communication and Watch Handover Protocols",
-      "Emergency Operations: Man Overboard and Anchoring Protocols"
-    ],
-    "status": "APPROVED",
-    "createdAt": "2026-05-15T13:16:07.658Z"
+    "category": "Navigation",
+    "difficulty": "beginner",
+    "thumbnail_url": "/naval_fleet_operations.png",
+    "author_id": 4,
+    "status": "published",
+    "created_at": "2026-05-15T13:16:07.658Z"
   },
   {
-    "id": "course-2",
+    "id": 108,
     "title": "Afloat Diesel Propulsion Operations & Auxiliary Diagnostics",
     "description": "Deep dive study for marine engineering officers on maintaining MTU auxiliary power generators, diesel combustion logs, and gearbox refits.",
-    "instructorId": "user-mentor-1",
-    "instructorName": "Captain Kelechi Amadi",
-    "lessons": [
-      "Marine Diesel Engine Fundamental Mechanics",
-      "Refit Diagnostics & Pressure Log Verification",
-      "Auxiliary Power Grid Load Balancing",
-      "Dockyard Maintenance Refit Protocols"
-    ],
-    "status": "APPROVED",
-    "createdAt": "2026-06-04T13:16:07.658Z"
+    "category": "Engineering",
+    "difficulty": "intermediate",
+    "thumbnail_url": null,
+    "author_id": 2,
+    "status": "published",
+    "created_at": "2026-06-04T13:16:07.658Z"
   },
   {
-    "id": "course-3",
+    "id": 109,
     "title": "Maritime Boundary Law & EEZ Patrol Strategy",
     "description": "Legal and tactical frameworks for patrolling Nigeria's Exclusive Economic Zone, prosecuting illegal fishing, and implementing Gulf of Guinea security accords.",
-    "instructorId": "user-mentor-retired-1",
-    "instructorName": "Rear Admiral Joseph Okonkwo (Rtd.)",
-    "lessons": [
-      "Introduction to Maritime Jurisdiction",
-      "EEZ Policing & Rules of Engagement",
-      "Boarding Operations Legal Procedures",
-      "International Piracy Tribunals Case Studies"
-    ],
-    "status": "APPROVED",
-    "createdAt": "2026-06-09T13:16:07.658Z"
+    "category": "Operations",
+    "difficulty": "intermediate",
+    "thumbnail_url": "/naval_training_drill.png",
+    "author_id": 5,
+    "status": "published",
+    "created_at": "2026-06-09T13:16:07.658Z"
   },
   {
-    "id": "course-4",
+    "id": 110,
     "title": "Combat Systems Alignment & Electronic Warfare",
     "description": "Technical manuals on radar calibration, fire control systems, and jamming countermeasures for electrical engineering officers.",
-    "instructorId": "user-mentor-2",
-    "instructorName": "Commodore Adebayo Balogun",
-    "lessons": [
-      "Radar Target Acquisition & Tracking",
-      "Electronic Support Measures (ESM)",
-      "Weapons Control System Integration",
-      "Anti-Ship Missile Countermeasures"
-    ],
-    "status": "APPROVED",
-    "createdAt": "2026-06-12T13:16:07.658Z"
+    "category": "Combat Systems",
+    "difficulty": "advanced",
+    "thumbnail_url": null,
+    "author_id": 3,
+    "status": "published",
+    "created_at": "2026-06-12T13:16:07.658Z"
   },
   {
-    "id": "course-5",
+    "id": 111,
     "title": "Naval Logistics, Supply Chain & Fleet Sustainment",
     "description": "Detailed training on replenishment at sea, dockyard procurement, and spare parts cataloging for logistics officers.",
-    "instructorId": "user-mentor-retired-1",
-    "instructorName": "Rear Admiral Joseph Okonkwo (Rtd.)",
-    "lessons": [
-      "Replenishment at Sea (RAS) Operations",
-      "Naval Dockyard Inventory Systems",
-      "Fleet Asset Lifecycle Planning",
-      "Global Maritime Supply Networks"
-    ],
-    "status": "APPROVED",
-    "createdAt": "2026-06-14T13:16:07.658Z"
+    "category": "Logistics",
+    "difficulty": "intermediate",
+    "thumbnail_url": null,
+    "author_id": 5,
+    "status": "published",
+    "created_at": "2026-06-14T13:16:07.658Z"
   },
   {
-    "id": "course-6",
+    "id": 112,
     "title": "Hydrographic Surveying & Sea Charting Protocols",
     "description": "Advanced course on sonar bathymetry, tidal corrections, and compiling official charts for the Nigerian Navy Hydrographic Office.",
-    "instructorId": "user-mentor-1",
-    "instructorName": "Captain Kelechi Amadi",
-    "lessons": [
-      "Single-beam & Multi-beam Sonar Operation",
-      "Tidal Heights & Data Correction",
-      "Electronic Navigational Charts (ENC) Standards",
-      "Submarine Topography Mapping"
-    ],
-    "status": "APPROVED",
-    "createdAt": "2026-06-16T13:16:07.658Z"
+    "category": "Navigation",
+    "difficulty": "advanced",
+    "thumbnail_url": null,
+    "author_id": 2,
+    "status": "published",
+    "created_at": "2026-06-16T13:16:07.658Z"
   },
   {
-    "id": "course-7",
+    "id": 113,
     "title": "Naval Command Leadership & Administrative Doctrine",
     "description": "Officer-level training covering staff writing, operational briefing structures, military justice procedures, and command ethics.",
-    "instructorId": "user-mentor-3",
-    "instructorName": "Commander Olayemi Cole",
-    "lessons": [
-      "Naval Staff Correspondence & Writing",
-      "Operational Briefing & Command Presence",
-      "Code of Conduct & Military Justice",
-      "Crisis Decision Making Paradigms"
-    ],
-    "status": "APPROVED",
-    "createdAt": "2026-06-19T13:16:07.658Z"
+    "category": "Leadership",
+    "difficulty": "intermediate",
+    "thumbnail_url": "/naval_mentorship_session.png",
+    "author_id": 4,
+    "status": "published",
+    "created_at": "2026-06-19T13:16:07.658Z"
   },
   {
-    "id": "course-8",
+    "id": 114,
     "title": "Search and Rescue (SAR) Mission Coordination",
     "description": "Tactical procedures for search pattern planning, communications with maritime rescue coordination centers, and rescue helicopter operations.",
-    "instructorId": "user-mentor-3",
-    "instructorName": "Commander Olayemi Cole",
-    "lessons": [
-      "SAR Comm & Distress Frequencies",
-      "Search Pattern Plotting & Drift Calculations",
-      "Helicopter Deck Operations at Sea",
-      "Multi-agency Incident Command Systems"
-    ],
-    "status": "APPROVED",
-    "createdAt": "2026-06-22T13:16:07.658Z"
+    "category": "Operations",
+    "difficulty": "intermediate",
+    "thumbnail_url": null,
+    "author_id": 4,
+    "status": "published",
+    "created_at": "2026-06-22T13:16:07.658Z"
   },
   {
-    "id": "course-pending",
+    "id": 115,
     "title": "Naval Intelligence Gathering & Reconnaissance Strategies",
     "description": "Detailed seminar outlining signal intelligence parsing, radar interception logs, and littoral zone intelligence networks.",
-    "instructorId": "user-mentor-retired-pending",
-    "instructorName": "Muhammad Bello (Rtd.)",
-    "lessons": [
-      "Signal Intelligence Fundamentals",
-      "Reconnaissance Log Compilation",
-      "Littoral Threat Identification Protocols"
-    ],
-    "status": "PENDING",
-    "createdAt": "2026-06-24T13:16:07.658Z"
+    "category": "Operations",
+    "difficulty": "advanced",
+    "thumbnail_url": null,
+    "author_id": 6,
+    "status": "pending",
+    "created_at": "2026-06-24T13:16:07.658Z"
   }
 ]

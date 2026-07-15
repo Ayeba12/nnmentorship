@@ -42,13 +42,13 @@
   --shadow-glow: 0 0 0 1px rgba(201, 161, 78, 0.1), 0 2px 12px rgba(201, 161, 78, 0.08);
 
   /* Reduced border radius scale globally */
-  --radius-3xl: 12px;
-  --radius-2xl: 8px;
-  --radius-xl: 6px;
-  --radius-lg: 4px;
-  --radius-md: 3px;
-  --radius: 3px;
-  --radius-sm: 2px;
+  --radius-3xl: 6px;
+  --radius-2xl: 4px;
+  --radius-xl: 3px;
+  --radius-lg: 2px;
+  --radius-md: 1.5px;
+  --radius: 1.5px;
+  --radius-sm: 1px;
 }
 
 body {

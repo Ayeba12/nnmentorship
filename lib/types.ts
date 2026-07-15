@@ -8,6 +8,9 @@ export interface Profile {
   full_name: string;
   role: UserRole;
   is_content_contributor: boolean;
+  can_manage_blog?: boolean;
+  can_manage_courses?: boolean;
+  can_manage_library?: boolean;
   verification_status: VerificationStatus;
   service_number: string | null;
   service_branch: string;
@@ -90,6 +93,15 @@ export interface Session {
   };
 }
 
+export interface SubTask {
+  id: string;
+  title: string;
+  completed: boolean;
+  type: 'checkbox' | 'choice' | 'note';
+  value?: 'yes' | 'no' | null | string;
+  optional?: boolean;
+}
+
 export interface Milestone {
   id: number;
   goal_id: number;
@@ -97,6 +109,7 @@ export interface Milestone {
   completed: boolean;
   completed_at: string | null;
   created_at: string;
+  subtasks?: SubTask[];
 }
 
 export interface Goal {
@@ -175,4 +188,32 @@ export interface AdminReports {
   retention_rate: number;
   long_term_relationships: number;
   all_relationships: (Relationship & { mentee?: { full_name: string }; mentor?: { full_name: string } })[];
+}
+
+export interface AppEvent {
+  id: number;
+  title: string;
+  description: string;
+  event_type: 'online' | 'offline' | 'podcast';
+  visibility: 'public' | 'private';
+  scheduled_at: string;
+  duration_minutes: number;
+  location: string | null;
+  meeting_link: string | null;
+  audio_url: string | null;
+  external_link: string | null;
+  created_by: number | null;
+  created_at: string;
+  registrations?: EventRegistration[];
+}
+
+export interface EventRegistration {
+  id: number;
+  event_id: number;
+  user_id: number | null;
+  guest_name: string | null;
+  guest_email: string | null;
+  status: 'attending' | 'interested';
+  created_at: string;
+  user?: Pick<Profile, 'id' | 'full_name' | 'email' | 'role' | 'rank' | 'avatar_url'>;
 }

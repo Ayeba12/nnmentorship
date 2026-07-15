@@ -9,9 +9,43 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = req.nextUrl;
     const postId = searchParams.get('post_id');
+    const lessonId = searchParams.get('lesson_id');
 
-    if (!postId) {
-      return NextResponse.json({ error: 'Missing post_id' }, { status: 400 });
+    if (!postId && !lessonId) {
+      return NextResponse.json({ error: 'Missing post_id or lesson_id' }, { status: 400 });
+    }
+
+    if (lessonId) {
+      const { data: comments, error } = await supabase
+        .from('lesson_comments')
+        .select('*')
+        .eq('lesson_id', Number(lessonId))
+        .order('created_at', { ascending: true });
+      if (error) {
+        console.warn('Lesson comments GET error or table missing:', error);
+        return NextResponse.json([]);
+      }
+
+      const userIds = Array.from(new Set(
+        (comments || []).map(c => c.user_id).filter(Boolean)
+      ));
+
+      let profiles: any[] = [];
+      if (userIds.length > 0) {
+        const { data: profs } = await supabase
+          .from('profiles')
+          .select('id, full_name, rank, avatar_url')
+          .in('id', userIds);
+        profiles = profs || [];
+      }
+      const profileMap = new Map(profiles.map(p => [p.id, p]));
+
+      const commentsWithUsers = (comments || []).map((c: any) => {
+        const user = profileMap.get(c.user_id) || null;
+        return { ...c, user };
+      });
+
+      return NextResponse.json(commentsWithUsers);
     }
 
     let query = supabase
@@ -63,10 +97,35 @@ export async function POST(req: NextRequest) {
     if (!profile) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json();
-    const { post_id, content } = body;
+    const { post_id, content, lesson_id } = body;
 
-    if (!post_id || !content) {
+    if (!content || (!post_id && !lesson_id)) {
       return NextResponse.json({ error: 'Missing parameters' }, { status: 400 });
+    }
+
+    if (lesson_id) {
+      const { data: comment, error } = await supabase
+        .from('lesson_comments')
+        .insert({
+          lesson_id: Number(lesson_id),
+          user_id: profile.id,
+          content
+        })
+        .select()
+        .single();
+      if (error) throw error;
+
+      const { data: userProf, error: userError } = await supabase
+        .from('profiles')
+        .select('id, full_name, rank, avatar_url')
+        .eq('id', profile.id)
+        .single();
+      if (userError) throw userError;
+
+      comment.user = userProf;
+
+      await logAudit(profile.id, 'post_lesson_comment', 'lesson_comment', String(comment.id), `Comment on lesson: ${lesson_id}`);
+      return NextResponse.json(comment, { status: 201 });
     }
 
     const { data: comment, error } = await supabase

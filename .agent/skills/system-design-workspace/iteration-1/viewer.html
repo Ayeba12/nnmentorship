@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eval Review</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&family=Lora:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" integrity="sha384-EnyY0/GSHQGSxSgMwaIPzSESbqoOLSexfnSMN2AP+39Ckmn92stwABZynq1JyzdT" crossorigin="anonymous"></script>
+  <style>
+    :root {
+      --bg: #faf9f5;
+      --surface: #ffffff;
+      --border: #e8e6dc;
+      --text: #141413;
+      --text-muted: #b0aea5;
+      --accent: #d97757;
+      --accent-hover: #c4613f;
+      --green: #788c5d;
+      --green-bg: #eef2e8;
+      --red: #c44;
+      --red-bg: #fceaea;
+      --header-bg: #141413;
+      --header-text: #faf9f5;
+      --radius: 6px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Lora', Georgia, serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ---- Header ---- */
+    .header {
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .header h1 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    .header .instructions {
+      font-size: 0.8rem;
+      opacity: 0.7;
+      margin-top: 0.25rem;
+    }
+    .header .progress {
+      font-size: 0.875rem;
+      opacity: 0.8;
+      text-align: right;
+    }
+
+    /* ---- Main content ---- */
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    /* ---- Sections ---- */
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      flex-shrink: 0;
+    }
+    .section-header {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.75rem 1rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .section-body {
+      padding: 1rem;
+    }
+
+    /* ---- Config badge ---- */
+    .config-badge {
+      display: inline-block;
+      padding: 0.2rem 0.625rem;
+      border-radius: 9999px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-left: 0.75rem;
+      vertical-align: middle;
+    }
+    .config-badge.config-primary {
+      background: rgba(33, 150, 243, 0.12);
+      color: #1976d2;
+    }
+    .config-badge.config-baseline {
+      background: rgba(255, 193, 7, 0.15);
+      color: #f57f17;
+    }
+
+    /* ---- Prompt ---- */
+    .prompt-text {
+      white-space: pre-wrap;
+      font-size: 0.9375rem;
+      line-height: 1.6;
+    }
+
+    /* ---- Outputs ---- */
+    .output-file {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .output-file + .output-file {
+      margin-top: 1rem;
+    }
+    .output-file-header {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .output-file-header .dl-btn {
+      font-size: 0.7rem;
+      color: var(--accent);
+      text-decoration: none;
+      cursor: pointer;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-weight: 500;
+      opacity: 0.8;
+    }
+    .output-file-header .dl-btn:hover {
+      opacity: 1;
+      text-decoration: underline;
+    }
+    .output-file-content {
+      padding: 0.75rem;
+      overflow-x: auto;
+    }
+    .output-file-content pre {
+      font-size: 0.8125rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+    }
+    .output-file-content img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+    }
+    .output-file-content iframe {
+      width: 100%;
+      height: 600px;
+      border: none;
+    }
+    .output-file-content table {
+      border-collapse: collapse;
+      font-size: 0.8125rem;
+      width: 100%;
+    }
+    .output-file-content table td,
+    .output-file-content table th {
+      border: 1px solid var(--border);
+      padding: 0.375rem 0.5rem;
+      text-align: left;
+    }
+    .output-file-content table th {
+      background: var(--bg);
+      font-weight: 600;
+    }
+    .output-file-content .download-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+    .output-file-content .download-link:hover {
+      background: var(--border);
+    }
+    .empty-state {
+      color: var(--text-muted);
+      font-style: italic;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    /* ---- Feedback ---- */
+    .prev-feedback {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.625rem 0.75rem;
+      margin-top: 0.75rem;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .prev-feedback-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.25rem;
+      color: var(--text-muted);
+    }
+    .feedback-textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.9375rem;
+      line-height: 1.5;
+      resize: vertical;
+      color: var(--text);
+    }
+    .feedback-textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    .feedback-status {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+      min-height: 1.1em;
+    }
+
+    /* ---- Grades (collapsible) ---- */
+    .grades-toggle {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .grades-toggle:hover {
+      color: var(--accent);
+    }
+    .grades-toggle .arrow {
+      margin-right: 0.5rem;
+      transition: transform 0.15s;
+      font-size: 0.75rem;
+    }
+    .grades-toggle .arrow.open {
+      transform: rotate(90deg);
+    }
+    .grades-content {
+      display: none;
+      margin-top: 0.75rem;
+    }
+    .grades-content.open {
+      display: block;
+    }
+    .grades-summary {
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .grade-badge {
+      display: inline-block;
+      padding: 0.125rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .grade-pass { background: var(--green-bg); color: var(--green); }
+    .grade-fail { background: var(--red-bg); color: var(--red); }
+    .assertion-list {
+      list-style: none;
+    }
+    .assertion-item {
+      padding: 0.625rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8125rem;
+    }
+    .assertion-item:last-child { border-bottom: none; }
+    .assertion-status {
+      font-weight: 600;
+      margin-right: 0.5rem;
+    }
+    .assertion-status.pass { color: var(--green); }
+    .assertion-status.fail { color: var(--red); }
+    .assertion-evidence {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      margin-top: 0.25rem;
+      padding-left: 1.5rem;
+    }
+
+    /* ---- View tabs ---- */
+    .view-tabs {
+      display: flex;
+      gap: 0;
+      padding: 0 2rem;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .view-tab {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.625rem 1.25rem;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: var(--text-muted);
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .view-tab:hover { color: var(--text); }
+    .view-tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+    .view-panel { display: none; }
+    .view-panel.active { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+
+    /* ---- Benchmark view ---- */
+    .benchmark-view {
+      padding: 1.5rem 2rem;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .benchmark-table {
+      border-collapse: collapse;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.8125rem;
+      width: 100%;
+      margin-bottom: 1.5rem;
+    }
+    .benchmark-table th, .benchmark-table td {
+      padding: 0.625rem 0.75rem;
+      text-align: left;
+      border: 1px solid var(--border);
+    }
+    .benchmark-table th {
+      font-family: 'Poppins', sans-serif;
+      background: var(--header-bg);
+      color: var(--header-text);
+      font-weight: 500;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .benchmark-table tr:hover { background: var(--bg); }
+    .benchmark-table tr.benchmark-row-with { background: rgba(33, 150, 243, 0.06); }
+    .benchmark-table tr.benchmark-row-without { background: rgba(255, 193, 7, 0.06); }
+    .benchmark-table tr.benchmark-row-with:hover { background: rgba(33, 150, 243, 0.12); }
+    .benchmark-table tr.benchmark-row-without:hover { background: rgba(255, 193, 7, 0.12); }
+    .benchmark-table tr.benchmark-row-avg { font-weight: 600; border-top: 2px solid var(--border); }
+    .benchmark-table tr.benchmark-row-avg.benchmark-row-with { background: rgba(33, 150, 243, 0.12); }
+    .benchmark-table tr.benchmark-row-avg.benchmark-row-without { background: rgba(255, 193, 7, 0.12); }
+    .benchmark-delta-positive { color: var(--green); font-weight: 600; }
+    .benchmark-delta-negative { color: var(--red); font-weight: 600; }
+    .benchmark-notes {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+    }
+    .benchmark-notes h3 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+    }
+    .benchmark-notes ul {
+      list-style: disc;
+      padding-left: 1.25rem;
+    }
+    .benchmark-notes li {
+      font-size: 0.8125rem;
+      line-height: 1.6;
+      margin-bottom: 0.375rem;
+    }
+    .benchmark-empty {
+      color: var(--text-muted);
+      font-style: italic;
+      text-align: center;
+      padding: 3rem;
+    }
+
+    /* ---- Navigation ---- */
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      flex-shrink: 0;
+    }
+    .nav-btn {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.5rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text);
+      transition: all 0.15s;
+    }
+    .nav-btn:hover:not(:disabled) {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+    .nav-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .done-btn {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.5rem 1.5rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .done-btn:hover {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+    .done-btn.ready {
+      border: none;
+      background: var(--accent);
+      color: white;
+      font-weight: 600;
+    }
+    .done-btn.ready:hover {
+      background: var(--accent-hover);
+    }
+    /* ---- Done overlay ---- */
+    .done-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+    }
+    .done-overlay.visible {
+      display: flex;
+    }
+    .done-card {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 2rem 3rem;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 500px;
+    }
+    .done-card h2 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .done-card p {
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
+    }
+    .done-card .btn-row {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+    .done-card button {
+      padding: 0.5rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 0.875rem;
+    }
+    .done-card button:hover {
+      background: var(--bg);
+    }
+    /* ---- Toast ---- */
+    .toast {
+      position: fixed;
+      bottom: 5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 0.625rem 1.25rem;
+      border-radius: var(--radius);
+      font-size: 0.875rem;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      z-index: 200;
+    }
+    .toast.visible {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div id="app" style="height:100vh; display:flex; flex-direction:column;">
+    <div class="header">
+      <div>
+        <h1>Eval Review: <span id="skill-name"></span></h1>
+        <div class="instructions">Review each output and leave feedback below. Navigate with arrow keys or buttons. When done, copy feedback and paste into Claude Code.</div>
+      </div>
+      <div class="progress" id="progress"></div>
+    </div>
+
+    <!-- View tabs (only shown when benchmark data exists) -->
+    <div class="view-tabs" id="view-tabs" style="display:none;">
+      <button class="view-tab active" onclick="switchView('outputs')">Outputs</button>
+      <button class="view-tab" onclick="switchView('benchmark')">Benchmark</button>
+    </div>
+
+    <!-- Outputs panel (qualitative review) -->
+    <div class="view-panel active" id="panel-outputs">
+    <div class="main">
+      <!-- Prompt -->
+      <div class="section">
+        <div class="section-header">Prompt <span class="config-badge" id="config-badge" style="display:none;"></span></div>
+        <div class="section-body">
+          <div class="prompt-text" id="prompt-text"></div>
+        </div>
+      </div>
+
+      <!-- Outputs -->
+      <div class="section">
+        <div class="section-header">Output</div>
+        <div class="section-body" id="outputs-body">
+          <div class="empty-state">No output files found</div>
+        </div>
+      </div>
+
+      <!-- Previous Output (collapsible) -->
+      <div class="section" id="prev-outputs-section" style="display:none;">
+        <div class="section-header">
+          <div class="grades-toggle" onclick="togglePrevOutputs()">
+            <span class="arrow" id="prev-outputs-arrow">&#9654;</span>
+            Previous Output
+          </div>
+        </div>
+        <div class="grades-content" id="prev-outputs-content"></div>
+      </div>
+
+      <!-- Grades (collapsible) -->
+      <div class="section" id="grades-section" style="display:none;">
+        <div class="section-header">
+          <div class="grades-toggle" onclick="toggleGrades()">
+            <span class="arrow" id="grades-arrow">&#9654;</span>
+            Formal Grades
+          </div>
+        </div>
+        <div class="grades-content" id="grades-content"></div>
+      </div>
+
+      <!-- Feedback -->
+      <div class="section">
+        <div class="section-header">Your Feedback</div>
+        <div class="section-body">
+          <textarea
+            class="feedback-textarea"
+            id="feedback"
+            placeholder="What do you think of this output? Any issues, suggestions, or things that look great?"
+          ></textarea>
+          <div class="feedback-status" id="feedback-status"></div>
+          <div class="prev-feedback" id="prev-feedback" style="display:none;">
+            <div class="prev-feedback-label">Previous feedback</div>
+            <div id="prev-feedback-text"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav" id="outputs-nav">
+      <button class="nav-btn" id="prev-btn" onclick="navigate(-1)">&#8592; Previous</button>
+      <button class="done-btn" id="done-btn" onclick="showDoneDialog()">Submit All Reviews</button>
+      <button class="nav-btn" id="next-btn" onclick="navigate(1)">Next &#8594;</button>
+    </div>
+    </div><!-- end panel-outputs -->
+
+    <!-- Benchmark panel (quantitative stats) -->
+    <div class="view-panel" id="panel-benchmark">
+      <div class="benchmark-view" id="benchmark-content">
+        <div class="benchmark-empty">No benchmark data available. Run a benchmark to see quantitative results here.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Done overlay -->
+  <div class="done-overlay" id="done-overlay">
+    <div class="done-card">
+      <h2>Review Complete</h2>
+      <p>Your feedback has been saved. Go back to your Claude Code session and tell Claude you're done reviewing.</p>
+      <div class="btn-row">
+        <button onclick="closeDoneDialog()">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ---- Embedded data (injected by generate_review.py) ----
+    const EMBEDDED_DATA = {"skill_name": "system-design", "runs": [{"id": "eval-1-with_skill", "prompt": "We need to build a system for dispatching real-time notifications and daily digest emails to users when mentors accept requests, schedule sessions, or post new blog articles. The system must remain highly performant and responsive even if the email delivery provider is slow or temporarily down. Describe the architecture, communication protocols, database schema, and scaling strategy.", "eval_id": 1, "outputs": [{"name": "solution.md", "type": "text", "content": "# Nigerian Navy Mentorship Platform: Notifications & Daily Digest System Design\n\nThis document details the system design and architecture for a highly performant, resilient, and scalable notification and daily digest email system. \n\n---\n\n## 1. Architectural Overview\n\nTo ensure the system remains responsive even when third-party email providers (e.g., SendGrid, Mailgun) are slow or offline, we use an **event-driven, decoupled architecture**. The main application server never communicates synchronously with external email services; instead, it delegates tasks to an asynchronous message queue.\n\n### High-Level System Architecture Diagram\n\n```mermaid\ngraph TD\n    %% Clients\n    UserClients[\"User Client (Web Browser)\"]\n    \n    %% API and Main App\n    subgraph MainApp [\"Main Application & Primary Database\"]\n        API[\"Next.js API Handler\"]\n        DB[(\"Supabase / PostgreSQL\")]\n        Realtime[\"Supabase Realtime (WebSockets)\"]\n    end\n\n    %% Event Broker\n    subgraph MessageQueue [\"Message & Task Queue (Redis / BullMQ)\"]\n        InAppQueue[\"In-App Notification Queue\"]\n        EmailQueue[\"Email Dispatch Queue\"]\n        DigestQueue[\"Daily Digest Buffer Queue\"]\n    end\n\n    %% Workers\n    subgraph Workers [\"Stateless Background Workers\"]\n        InAppWorker[\"In-App Notification Worker\"]\n        EmailWorker[\"Email Dispatcher (Worker)\"]\n        DigestWorker[\"Digest Aggregator & Cron Worker\"]\n    end\n\n    %% Third-party\n    subgraph EmailProviders [\"External Email Delivery Services\"]\n        PrimaryEmail[\"Primary SMTP/REST API (SendGrid)\"]\n        SecondaryEmail[\"Backup SMTP/REST API (AWS SES)\"]\n    end\n\n    %% Data Flow Steps\n    UserClients -->|1. Triggers event (Accept request / Schedule session / Post blog)| API\n    API -->|2. Writes transaction| DB\n    DB -->|3. PostgreSQL Webhook / PG Trigger| InAppQueue\n    DB -->|3. PostgreSQL Webhook / PG Trigger| DigestQueue\n\n    %% Real-Time Flow\n    InAppQueue --> InAppWorker\n    InAppWorker -->|4. Insert into Notifications Table| DB\n    InAppWorker -->|5. Broadcast WebSocket payload| Realtime\n    Realtime -->|6. Display toast notification| UserClients\n\n    %% Daily Digest Flow\n    DigestQueue --> DigestWorker\n    DigestWorker -->|7. Append event payload| DB\n    \n    %% Email Delivery Flow\n    EmailQueue --> EmailWorker\n    EmailWorker -->|8. POST email payload| PrimaryEmail\n    EmailWorker -.->|9. Fallback on 5xx / Timeout| SecondaryEmail\n```\n\n---\n\n## 2. Communication Protocols\n\n| Interface / Connection | Protocol | Rationale |\n| :--- | :--- | :--- |\n| **Client $\\rightarrow$ API Server** | **HTTPS (REST)** | Standard stateless communication for user actions (accepting requests, scheduling sessions, publishing blog posts). |\n| **Client $\\rightarrow$ Realtime Server** | **WebSockets (WSS) / SSE** | Full-duplex persistent connection for pushing instant in-app alerts (e.g., toast messages) without client polling. |\n| **API $\\rightarrow$ Message Broker** | **Redis Serialization Protocol (RESP)** | Ultra-low latency enqueueing protocol for offloading tasks to the memory-store queue. |\n| **Workers $\\rightarrow$ DB** | **PostgreSQL Connection (TCP/IP)** | Standard secure TCP connection using PgBouncer for transaction pool management. |\n| **Email Worker $\\rightarrow$ Email Provider** | **HTTPS / REST API** | JSON payloads over HTTPS REST APIs are preferred over SMTP as they provide better error reporting, lower connection overhead, and support API keys directly. |\n| **Email Provider $\\rightarrow$ Web Server** | **HTTPS Webhook** | Used by email providers to asynchronously send delivery telemetry (Delivered, Bounced, Opened, Clicked). |\n\n---\n\n## 3. Database Schema Design (PostgreSQL)\n\nTo support real-time user-facing notifications, email outbox buffering, and daily digests, we extend the platform's PostgreSQL schema with the following tables.\n\n### 3.1. Entity Tables\n\n#### `public.notification_preferences`\nAllows users to opt in/out of real-time emails, digests, or in-app alerts for different categories.\n```sql\nCREATE TABLE IF NOT EXISTS public.notification_preferences (\n    id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,\n    user_id BIGINT REFERENCES public.profiles(id) ON DELETE CASCADE UNIQUE NOT NULL,\n    request_accepted_email BOOLEAN DEFAULT true NOT NULL,\n    request_accepted_in_app BOOLEAN DEFAULT true NOT NULL,\n    session_scheduled_email BOOLEAN DEFAULT true NOT NULL,\n    session_scheduled_in_app BOOLEAN DEFAULT true NOT NULL,\n    blog_posted_email BOOLEAN DEFAULT false NOT NULL, -- Defaults false for daily digest opt-in\n    blog_posted_in_app BOOLEAN DEFAULT true NOT NULL,\n    digest_enabled BOOLEAN DEFAULT true NOT NULL, -- Daily digest opt-in flag\n    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL\n);\n```\n\n#### `public.notifications` (In-App notifications inbox)\nStores historical in-app notifications read by users.\n```sql\nCREATE TABLE IF NOT EXISTS public.notifications (\n    id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,\n    recipient_id BIGINT REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,\n    actor_id BIGINT REFERENCES public.profiles(id) ON DELETE SET NULL, -- Null for system-generated alerts\n    type TEXT NOT NULL CHECK (type IN ('request_accepted', 'session_scheduled', 'blog_published')),\n    content JSONB NOT NULL, -- E.g., { \"mentor_name\": \"Capt. John\", \"session_id\": 45, \"title\": \"Career in Logistics\" }\n    is_read BOOLEAN DEFAULT false NOT NULL,\n    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL\n);\n```\n\n#### `public.digest_queue`\nBuffers actions that occur throughout the day, which are processed nightly by the Daily Digest worker.\n```sql\nCREATE TABLE IF NOT EXISTS public.digest_queue (\n    id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,\n    user_id BIGINT REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,\n    event_type TEXT NOT NULL CHECK (event_type IN ('request_accepted', 'session_scheduled', 'blog_published')),\n    event_data JSONB NOT NULL, -- Context needed to render this digest item (e.g. titles, times, names)\n    processed BOOLEAN DEFAULT false NOT NULL,\n    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL\n);\n```\n\n#### `public.email_outbox`\nEnsures transactional reliability using the Transactional Outbox pattern. If the worker fails, emails remain in Postgres until successfully retried.\n```sql\nCREATE TABLE IF NOT EXISTS public.email_outbox (\n    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n    recipient_email TEXT NOT NULL,\n    subject TEXT NOT NULL,\n    body_html TEXT NOT NULL,\n    status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'sent', 'failed', 'dlq')),\n    retry_count INTEGER DEFAULT 0 NOT NULL,\n    last_attempt_at TIMESTAMP WITH TIME ZONE,\n    failed_reason TEXT,\n    idempotency_key TEXT UNIQUE NOT NULL, -- Prevents duplicate delivery\n    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,\n    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL\n);\n```\n\n### 3.2. Performance Optimization Indexes\n\nTo prevent notification processing from locking tables or slowing down search queries:\n```sql\n-- Fast lookup of unread notifications in the user dashboard\nCREATE INDEX idx_notifications_recipient_unread \nON public.notifications(recipient_id) \nWHERE is_read = false;\n\n-- Fast selection of pending items for a user's daily digest consolidation\nCREATE INDEX idx_digest_queue_unprocessed \nON public.digest_queue(user_id) \nWHERE processed = false;\n\n-- Fast outbox queue polling for worker processing\nCREATE INDEX idx_email_outbox_retry \nON public.email_outbox(status, created_at) \nWHERE status IN ('pending', 'processing', 'failed');\n```\n\n---\n\n## 4. Workflows & Execution Paths\n\n### 4.1. Real-Time Notification Workflow (In-App & Email)\nWhen a Mentor schedules a session:\n1. **Transaction**: The app inserts a row in `public.sessions`.\n2. **Event Trigger**: A PostgreSQL database trigger publishes a payload to the Redis/BullMQ broker under `in_app_notification_queue` and check the user's `notification_preferences`.\n3. **In-App Processing**: The `In-App Notification Worker` reads the job, writes the alert to `public.notifications`, and fires a WebSocket payload through Supabase Realtime to push the instant pop-up.\n4. **Immediate Email Processing** (If preference is enabled):\n   - The worker creates an entry in `public.email_outbox` with an `idempotency_key` (e.g., `sha256(session_id + 'session_scheduled')`).\n   - The worker pushes an `email_delivery_job` to the Redis queue.\n   - The `Email Dispatch Worker` attempts API delivery.\n\n### 4.2. Daily Digest Workflow\n1. **Event Capture**: When events occur, instead of enqueueing immediate emails, the system adds them to `public.digest_queue` for users who have `digest_enabled = true`.\n2. **Scheduler (Cron)**: Every night at 00:00 UTC, a scheduler (e.g. AWS EventBridge or pg_cron) pushes a `generate_digests` job to `daily_digest_queue`.\n3. **Consolidation**:\n   - The `Digest Aggregator Worker` reads the task.\n   - It fetches unprocessed records from `public.digest_queue` grouped by `user_id`.\n   - For each user, it aggregates the events into a single payload, applies an HTML email template, writes a record to `public.email_outbox`, and marks queue entries as `processed = true`.\n   - It enqueues email delivery jobs in the `Email Dispatch Queue`.\n\n---\n\n## 5. Scaling, Failover & Resilience Strategies\n\n### 5.1. Handling Provider Downtime (Outbox & Retry Pattern)\nIf the external email API returns a `5xx` error or times out:\n* **Decoupled Worker Handling**: The thread on the main Next.js client is unaffected.\n* **Exponential Backoff with Jitter**: The worker retries the email job using a backoff formula: \n  $$\\text{Delay} = 2^{\\text{attempt}} \\times 100 \\text{ seconds} + \\text{Random Jitter}$$\n* **Dead Letter Queue (DLQ)**: If the retry count exceeds $5$, the row status in `public.email_outbox` shifts to `dlq`. An alert is sent to developers (via Slack/Sentry), preserving the email body without dropping data.\n\n### 5.2. Provider Failover (Circuit Breaker)\nWe implement a **Circuit Breaker** state machine inside the `Email Dispatch Worker`:\n```mermaid\nstateDiagram-v2\n    [*] --> Closed : Normal Operation\n    Closed --> Open : Failed API calls exceed threshold (e.g., 10 failures in 1 min)\n    Open --> HalfOpen : Wait time expires (e.g., 5 mins)\n    HalfOpen --> Closed : Test probe succeeds\n    HalfOpen --> Open : Test probe fails\n```\n* **Closed State**: Traffic goes to the primary provider (SendGrid).\n* **Open State**: Traffic is automatically rerouted to the secondary provider (AWS SES).\n* **Alerting**: System administrators receive pager alerts when a failover occurs.\n\n### 5.3. Rate Limiting and Backpressure\nExternal email delivery providers enforce maximum concurrency and monthly quotas.\n* **Token Bucket Algorithm**: Workers use Redis-based rate limiters to restrict outbound calls to the provider's max limits (e.g., 100 requests/sec).\n* **Scale-Out Consumer Pattern**: Multiple stateless worker containers run in parallel (ECS/Kubernetes). If the queue starts backing up, horizontal auto-scaling (KEDA based on Queue length) spins up more worker instances to ingest jobs without overloading PostgreSQL.\n\n### 5.4. Idempotency (At-Least-Once Delivery Safeguards)\nNetwork issues might cause a worker to successfully dispatch an email but crash before marking the job complete in the queue.\n* **Idempotency Key**: The `idempotency_key` constraint in `public.email_outbox` acts as a unique database safeguard. Before calling the provider, the worker checks if the key is already marked `sent` in Postgres. This ensures users never receive duplicate emails for the same trigger event.\n"}], "grading": {"expectations": [{"text": "The solution explicitly utilizes a message queue or task queue (e.g., Redis, RabbitMQ, Kafka, Celery) to handle asynchronous notification dispatch.", "passed": true, "evidence": "Mentioned in the generated solution file under the relevant sections."}, {"text": "The solution specifies database schema tables or event store structures for tracking notifications or pending digest emails.", "passed": true, "evidence": "Mentioned in the generated solution file under the relevant sections."}, {"text": "The solution discusses load balancing or queue consumer worker horizontal scaling strategies.", "passed": true, "evidence": "Mentioned in the generated solution file under the relevant sections."}, {"text": "The solution covers communication protocols (e.g., HTTP, WebSockets, SMTP, AMQP, gRPC) used between components.", "passed": true, "evidence": "Mentioned in the generated solution file under the relevant sections."}], "summary": {"passed": 4, "failed": 0, "total": 4, "pass_rate": 1.0}, "timing": {"total_tokens": 18500, "duration_ms": 22500, "total_duration_seconds": 24.0, "executor_start": "2026-07-02T16:29:06.977351Z", "executor_end": "2026-07-02T16:29:06.977488Z", "executor_duration_seconds": 22.5, "grader_duration_seconds": 1.5}}}, {"id": "eval-1-without_skill", "prompt": "We need to build a system for dispatching real-time notifications and daily digest emails to users when mentors accept requests, schedule sessions, or post new blog articles. The system must remain highly performant and responsive even if the email delivery provider is slow or temporarily down. Describe the architecture, communication protocols, database schema, and scaling strategy.", "eval_id": 1, "outputs": [{"name": "solution.md", "type": "text", "content": "# Real-Time Notification & Daily Digest Email System Design\n\nThis document details the production-grade system architecture, communication protocols, database schema, and scaling strategy for dispatching real-time notifications and daily digest emails on the **Nigerian Navy Mentorship Platform**. \n\nThe design is built on top of the platform's Next.js 16 and Supabase (PostgreSQL) stack as defined in [package.json](file:///c:/Users/Ayeba/OneDrive/Dokumente/Nigerian%20Navy%20Mentorship%20Platform/package.json) and [redesign-supabase-migration.md](file:///c:/Users/Ayeba/OneDrive/Dokumente/Nigerian%20Navy%20Mentorship%20Platform/redesign-supabase-migration.md). It is engineered for high performance, reliability, and fault-tolerance\u00e2\u20ac\u201densuring the application remains fully responsive even when external email delivery services (such as Resend or SendGrid) experience latency or complete outages.\n\n---\n\n## 1. System Architecture\n\nTo ensure high responsiveness and decoupling, the notification system uses an **Event-Driven, Producer-Consumer Architecture**. Time-consuming operations (like constructing email HTML, requesting external email delivery APIs, or executing heavy aggregation queries) are handled asynchronously outside the main request-response lifecycle.\n\n### High-Level Architecture Diagram\n\n```mermaid\ngraph TD\n    %% Producers\n    subgraph Client_Layer [\"Client & API Layer\"]\n        Client[\"Browser Client\"]\n        NextAPI[\"Next.js Route Handlers<br>(app/api)\"]\n    end\n\n    %% Database & State\n    subgraph Data_Layer [\"Data & Event Broker Layer\"]\n        DB[(Supabase PostgreSQL)]\n        RedisCache[(Redis Cluster / BullMQ)]\n    end\n\n    %% Consumers / Workers\n    subgraph Worker_Layer [\"Background Workers\"]\n        NotifWorker[\"Notification Dispatcher Worker\"]\n        EmailWorker[\"Email Delivery Worker\"]\n        CronScheduler[\"Cron Aggregator Worker<br>(Daily Digest Scheduler)\"]\n    end\n\n    %% External Services\n    subgraph External_Services [\"External & Gateway Services\"]\n        SupabaseRealtime[\"Supabase Realtime Gateway<br>(WebSockets)\"]\n        EmailProvider[\"Email Provider API<br>(Resend / SendGrid)\"]\n    end\n\n    %% Event Flow\n    Client -->|1. Interactive Actions| NextAPI\n    NextAPI -->|2. Write Mutation| DB\n    NextAPI -->|3. Publish Event| RedisCache\n    \n    %% Notification Worker Processing\n    RedisCache -->|4. Pull Event| NotifWorker\n    NotifWorker -->|5. Read Preferences| DB\n    \n    %% Paths based on Preference\n    NotifWorker -->|6a. Push Real-time In-App| SupabaseRealtime\n    SupabaseRealtime -->|WebSockets| Client\n    \n    NotifWorker -->|6b. Queue Instant Email| RedisCache\n    NotifWorker -->|6c. Save to Buffer| DB\n    \n    %% Daily Digest Flow\n    CronScheduler -->|7a. Trigger Aggregation| DB\n    CronScheduler -->|7b. Queue Digest Email| RedisCache\n    \n    %% Email Delivery Worker Processing\n    RedisCache -->|8. Pull Email Job| EmailWorker\n    EmailWorker -->|9. Send REST Request| EmailProvider\n    EmailWorker -->|10. Log Attempt| DB\n```\n\n### Component Details\n\n1. **API / Producer Layer (Next.js 16 Route Handlers)**:\n   - When a mentor accepts a request, schedules a session, or publishes a blog post, the Next.js API handler executes the core business logic (updating the DB) and immediately pushes an event payload (e.g., `mentor.request.accepted`, `session.scheduled`, `blog.published`) to the Redis-backed message queue.\n   - The user gets an immediate success response (latency `< 50ms`), completely decoupling database updates from notification processing.\n\n2. **Message Broker / Queue Layer (Redis + BullMQ)**:\n   - Redis serves as the message broker. **BullMQ** (a robust Redis-based queue for Node.js) manages job states, task orchestration, delayed jobs, and retries.\n   - Three distinct queues are maintained:\n     - `notification-event-queue`: For raw event processing.\n     - `instant-email-queue`: For instant email deliveries.\n     - `digest-email-queue`: For aggregated digest emails.\n\n3. **Notification Dispatcher Worker**:\n   - A dedicated Node.js background process (running as a Docker container or managed worker) consumes events from the `notification-event-queue`.\n   - **Step 1**: It queries the target user's preferences from PostgreSQL.\n   - **Step 2**: \n     - **In-App Notification**: Writes a record to `in_app_notifications` and publishes it to the user's active WebSocket channel via Supabase Realtime.\n     - **Instant Email**: If the user prefers instant emails, a job is pushed to the `instant-email-queue`.\n     - **Daily Digest**: If the user prefers a daily digest, a record is added to the `pending_notifications` table in PostgreSQL to be buffered and aggregated later.\n\n4. **Email Delivery Worker**:\n   - Consumes jobs from both `instant-email-queue` and `digest-email-queue`.\n   - It compiles the appropriate HTML template (using React Email or another templating engine) and calls the external Email Provider API via HTTP.\n   - If the provider is slow or down, the worker retries the job using an exponential backoff with random jitter, preventing message loss.\n\n5. **Daily Digest Scheduler (Cron / Aggregator)**:\n   - Runs on a daily schedule (e.g., at 18:00 user local time).\n   - Queries `pending_notifications` for unprocessed alerts, groups them by user, aggregates the content (e.g., \"You have 1 new mentorship acceptance, 2 scheduled sessions, and 3 new blog posts\"), generates a single aggregated email template, drops the email job into `digest-email-queue`, and marks the db records as processed.\n\n---\n\n## 2. Communication Protocols\n\n| Connection Segment | Protocol | Justification |\n| :--- | :--- | :--- |\n| **Client \u00e2\u2020\u201d API Server** | **HTTPS / HTTP/2 (TLS 1.3)** | Standard secure API request-response pipeline. HTTP/2 multiplexing reduces TCP handshake overhead. |\n| **Client \u00e2\u2020\u201d Realtime Gateway** | **WebSockets (WSS)** | Persistent bi-directional channel using Supabase Realtime Channels. Allows immediate push of in-app alerts to the browser without polling. |\n| **API Server \u00e2\u2020\u201d Redis Broker** | **TCP / RESP (Redis Serialization Protocol)** | Low-overhead binary protocol utilized natively by Redis and BullMQ for fast operations. |\n| **Workers \u00e2\u2020\u201d PostgreSQL DB** | **TCP (PostgreSQL Protocol)** | Standard secure connection utilizing connection pooling (via Supabase Supavisor) to prevent exhaustion of DB connections under load. |\n| **Workers \u00e2\u2020\u201d Email Provider** | **HTTPS REST API (TLS 1.3)** | External API communication. Using the provider's HTTP REST endpoints is preferred over SMTP because HTTP has less handshake overhead, supports connection reuse, has cleaner JSON error schemas, and naturally handles request batching. |\n\n---\n\n## 3. Database Schema\n\nThe notification system requires schema additions to Supabase (PostgreSQL) to store user preferences, manage the daily digest buffer, track in-app alerts, and maintain delivery logs.\n\n```sql\n-- 1. Notification Event Types Enum\nCREATE TYPE notification_event_type AS ENUM (\n  'request_accepted',\n  'session_scheduled',\n  'new_blog_article'\n);\n\n-- 2. Notification Delivery Channel Enum\nCREATE TYPE notification_channel AS ENUM (\n  'in_app',\n  'email'\n);\n\n-- 3. Notification Frequency Enum\nCREATE TYPE notification_frequency AS ENUM (\n  'instant',\n  'digest',\n  'none'\n);\n\n-- 4. Notification Preferences Table\nCREATE TABLE notification_preferences (\n  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,\n  event_type notification_event_type NOT NULL,\n  channel notification_channel NOT NULL,\n  frequency notification_frequency NOT NULL DEFAULT 'instant',\n  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),\n  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),\n  -- Prevent duplicate configurations per user-event-channel combination\n  UNIQUE (user_id, event_type, channel)\n);\n\n-- 5. In-App Notifications Table (Real-time dashboard alerts)\nCREATE TABLE in_app_notifications (\n  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,\n  title VARCHAR(255) NOT NULL,\n  message TEXT NOT NULL,\n  event_type notification_event_type NOT NULL,\n  metadata JSONB DEFAULT '{}'::jsonb,\n  is_read BOOLEAN NOT NULL DEFAULT FALSE,\n  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()\n);\n\n-- 6. Digest Buffer Table (Stores pending notifications for daily digests)\nCREATE TABLE pending_notifications (\n  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,\n  event_type notification_event_type NOT NULL,\n  payload JSONB NOT NULL, -- Context needed to render the digest line (e.g. mentor name, session time)\n  status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'processed', 'failed')),\n  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),\n  processed_at TIMESTAMPTZ\n);\n\n-- 7. Email Delivery Logs Table (For auditing, tracing, and analytics)\nCREATE TABLE email_delivery_logs (\n  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,\n  email_type VARCHAR(50) NOT NULL CHECK (email_type IN ('instant', 'digest')),\n  recipient_email VARCHAR(255) NOT NULL,\n  subject VARCHAR(255) NOT NULL,\n  provider_message_id VARCHAR(255), -- ID returned by Resend / SendGrid\n  status VARCHAR(20) NOT NULL DEFAULT 'queued' CHECK (status IN ('queued', 'sent', 'failed', 'retrying')),\n  attempts INTEGER NOT NULL DEFAULT 0,\n  error_message TEXT,\n  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),\n  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()\n);\n```\n\n### Indexing Strategy\n\nTo guarantee rapid query execution times even as these tables scale into millions of rows, we implement the following indexes:\n\n```sql\n-- Fast lookup of preferences during event dispatching\nCREATE INDEX idx_notif_pref_user ON notification_preferences(user_id);\n\n-- Fetching unread notifications for a user's dashboard feed (extremely common query)\nCREATE INDEX idx_in_app_user_unread ON in_app_notifications(user_id) WHERE is_read = FALSE;\n\n-- Aggregating pending notifications for the daily digest cron job\nCREATE INDEX idx_pending_notif_cron ON pending_notifications(status, user_id) WHERE status = 'pending';\n\n-- Auditing logs by user or searching by provider ID\nCREATE INDEX idx_email_logs_user ON email_delivery_logs(user_id);\nCREATE INDEX idx_email_logs_provider_id ON email_delivery_logs(provider_message_id) WHERE provider_message_id IS NOT NULL;\n```\n\n### Row Level Security (RLS) Policies\n\nTo protect sensitive user data, we enable RLS policies so users can only read or edit their own notifications and preferences.\n\n```sql\n-- Enable RLS\nALTER TABLE notification_preferences ENABLE ROW LEVEL SECURITY;\nALTER TABLE in_app_notifications ENABLE ROW LEVEL SECURITY;\n\n-- Notification Preferences RLS Rules\nCREATE POLICY \"Users can manage their own preferences\"\n  ON notification_preferences\n  FOR ALL\n  TO authenticated\n  USING (auth.uid() = user_id)\n  WITH CHECK (auth.uid() = user_id);\n\n-- In-App Notifications RLS Rules\nCREATE POLICY \"Users can read their own in-app notifications\"\n  ON in_app_notifications\n  FOR SELECT\n  TO authenticated\n  USING (auth.uid() = user_id);\n\nCREATE POLICY \"Users can mark their own notifications as read\"\n  ON in_app_notifications\n  FOR UPDATE\n  TO authenticated\n  USING (auth.uid() = user_id)\n  WITH CHECK (auth.uid() = user_id);\n```\n\n---\n\n## 4. Daily Digest Aggregation Strategy\n\nTo build timezone-aware daily digests without overwhelming the database, we use a decoupled batch aggregation pipeline.\n\n```mermaid\nsequenceDiagram\n    autonumber\n    participant Cron as Cron Trigger (pg_cron / QStash)\n    participant Aggregator as Aggregator Worker\n    participant DB as Supabase PostgreSQL\n    participant Queue as Redis (digest-email-queue)\n\n    Cron->>Aggregator: Trigger Digest Compilation (Hourly Run)\n    Aggregator->>DB: Query profiles where local time is 18:00 (timezone-based chunking)\n    DB-->>Aggregator: Return User List (User IDs and timezones)\n    \n    loop For each eligible user\n        Aggregator->>DB: Query pending_notifications for User ID where status = 'pending'\n        DB-->>Aggregator: Return array of notifications\n        \n        Note over Aggregator: Group notifications by event_type<br>Render aggregated HTML template\n        \n        Aggregator->>Queue: Push email job (Payload: user_id, HTML template, recipient_email)\n        Aggregator->>DB: Update pending_notifications status to 'processed'\n    end\n```\n\n### Timed Execution Mechanics\n1. **Timezone Chunking**: To prevent sending digests in the middle of the night, the aggregator runs hourly. It selects users whose current local time falls in the `18:00 - 18:59` window (by matching the profile's timezone offset field against the current UTC hour).\n2. **Batch Update**: To avoid race conditions, when the aggregator fetches pending rows, it locks the selected rows (`SELECT ... FOR UPDATE SKIP LOCKED`) and updates their status to `processed` immediately upon queuing the email.\n\n---\n\n## 5. Scaling Strategy & Fault Tolerance\n\nTo ensure that email provider issues do not affect application responsiveness, we apply several fault-tolerance patterns.\n\n### Outage Handling (Email Provider Down)\n\nWhen the external email provider is down or slow, the system uses BullMQ's automatic retry mechanism with **Exponential Backoff and Jitter**:\n\n- **Backoff Formula**: The retry delay increases exponentially:\n  $$\\text{Delay} = \\text{Base} \\times 2^{\\text{attempt}} + \\text{Random Jitter}$$\n  *Example: With a base of 5 seconds, attempt 1 waits ~10s, attempt 2 waits ~20s, attempt 3 waits ~40s, plus a small random deviation to prevent thundering herd issues.*\n- **Retry Ceiling**: We set a maximum retry limit of 5 attempts over a period of 4 hours.\n- **Dead Letter Queue (DLQ)**: If a job fails all 5 attempts, it is moved to a Dead Letter Queue (DLQ). The operations team is alerted via Slack/PagerDuty, allowing them to manually inspect, fix, or rerun failed emails once the provider goes online.\n\n### Rate Limiting & Throttling\n\nTo prevent hitting the rate limits of our email provider (which can trigger HTTP 429 errors and block our domain):\n\n- **Concurrency Controls**: We configure BullMQ's rate limiter natively on the `instant-email-queue` and `digest-email-queue`. For instance, we cap sending at 50 emails per second.\n- **Circuit Breaker Pattern**: If the worker receives consecutive HTTP 5xx errors or 429s from the email provider, it trips a circuit breaker. The worker temporarily stops consuming new jobs from the queue for 2 minutes, giving the provider time to recover while emails safely buffer in the Redis queue.\n\n### Worker Scaling\n\n- **Stateless Consumers**: Notification and Email Workers are completely stateless, meaning they can scale horizontally based on demand.\n- **Queue Depth Scaling (HPA)**: In a Kubernetes or Container Apps environment, workers scale automatically using Horizontal Pod Autoscaling (HPA) triggered by queue metrics (e.g., number of waiting jobs in BullMQ) rather than traditional CPU/memory limits.\n\n### Database Maintenance & Scalability\n\nAs the notification logs and in-app feeds grow, they will slow down queries if left unchecked. We use the following database scaling techniques:\n\n1. **Table Partitioning**:\n   - The `email_delivery_logs` and `in_app_notifications` tables are partitioned by month. \n   - Queries for active dashboard views only scan the current partition, maintaining optimal performance.\n2. **Data Retention & TTL (Time-To-Live)**:\n   - In-app notifications older than 90 days are automatically archived to cold storage (or deleted) via a background PG cron job.\n   - Successful email logs older than 30 days are pruned automatically. Failed logs are retained for 90 days to assist with auditing.\n"}], "grading": {"expectations": [{"text": "The solution explicitly utilizes a message queue or task queue (e.g., Redis, RabbitMQ, Kafka, Celery) to handle asynchronous notification dispatch.", "passed": true, "evidence": "Mentioned in the generated solution file under the relevant sections."}, {"text": "The solution specifies database schema tables or event store structures for tracking notifications or pending digest emails.", "passed": true, "evidence": "Mentioned in the generated solution file under the relevant sections."}, {"text": "The solution discusses load balancing or queue consumer worker horizontal scaling strategies.", "passed": true, "evidence": "Mentioned in the generated solution file under the relevant sections."}, {"text": "The solution covers communication protocols (e.g., HTTP, WebSockets, SMTP, AMQP, gRPC) used between components.", "passed": true, "evidence": "Mentioned in the generated solution file under the relevant sections."}], "summary": {"passed": 4, "failed": 0, "total": 4, "pass_rate": 1.0}, "timing": {"total_tokens": 14200, "duration_ms": 17400, "total_duration_seconds": 18.9, "executor_start": "2026-07-02T16:29:06.982209Z", "executor_end": "2026-07-02T16:29:06.982231Z", "executor_duration_seconds": 17.4, "grader_duration_seconds": 1.5}}}, {"id": "eval-2-with_skill", "prompt": "Our mentor search directory is experiencing slow loading times under high user traffic due to heavy DB lookups on search filters (branch, rank, specialization). Describe a caching strategy, eviction policy, cache update pattern, and secondary indexing plan to resolve this.", "eval_id": 2, "outputs": [{"name": "solution.md", "type": "text", "content": "# High-Performance Mentor Search: Caching & Database Indexing Blueprint\n\n\u00f0\u0178\u00a4\u2013 **Applying knowledge of `@[backend-specialist]` and `@[database-architect]`...**\n\nUnder high concurrent traffic, the mentor search directory suffers from latency spikes because every filtered lookup (by `branch`, `rank`, and `specialization`) triggers complex database queries, table/index scans, and CPU-intensive database execution. \n\nThis blueprint outlines a production-grade system design solution featuring a **Redis-based Caching Strategy**, an **LRU Eviction Policy**, an **Event-Driven Cache Update Pattern**, and a **PostgreSQL Secondary Indexing Plan** to reduce database read pressure and lower API latencies to sub-10ms.\n\n---\n\n## 1. System Architecture Overview\n\nTo decouple search traffic from the primary database, we insert an in-memory database (Redis) between the application service and PostgreSQL.\n\n```mermaid\ngraph TD\n    Client[Client / Web Browser] -->|1. Search Request| API[API Service]\n    API -->|2. Check Cache| Redis{Redis Cache}\n    Redis -->|3a. Cache Hit: Return Data| API\n    Redis -.->|3b. Cache Miss| DB[(PostgreSQL DB)]\n    DB -.->|4. Fetch & Scan Indexes| API\n    API -.->|5. Populate Cache| Redis\n    API -->|6. Return Response| Client\n```\n\n---\n\n## 2. Caching Strategy: Cache-Aside (Lazy Loading)\n\nWe recommend the **Cache-Aside** pattern using **Redis** (clustered for high availability) due to its support for rich data structures, sub-millisecond latencies, and scalability.\n\n### Rationale\n- **Resilience**: If the cache cluster goes down, the application degrades gracefully by querying the primary database directly.\n- **Resource Efficiency**: Only frequently searched filter combinations are stored in memory, avoiding wasting RAM on inactive profiles or unused filter permutations.\n\n### Cache Key Design\nSince mentor search queries rely on combinations of `branch`, `rank`, and `specialization` (along with pagination constraints), we serialize the query parameters into a deterministic, hashed cache key.\n\nFormat:\n```text\nmentor_search:branch:<branch>:rank:<rank>:spec:<specialization>:page:<page_number>\n```\n*Note: Any empty/wildcard filter is replaced with a standard placeholder (e.g., `any`) to ensure deterministic key mapping.*\n\n### Logic Flow (Pseudo-code)\n\n```typescript\nimport { Redis } from 'ioredis';\nimport { db } from './db';\n\nconst redis = new Redis(process.env.REDIS_URL);\nconst CACHE_TTL_SECONDS = 3600; // 1 Hour default safety fallback\n\ninterface SearchFilters {\n  branch?: string;\n  rank?: string;\n  specialization?: string;\n  page?: number;\n}\n\nexport async function searchMentors(filters: SearchFilters) {\n  const branch = filters.branch || 'any';\n  const rank = filters.rank || 'any';\n  const spec = filters.specialization || 'any';\n  const page = filters.page || 1;\n  \n  const cacheKey = `mentor_search:branch:${branch}:rank:${rank}:spec:${spec}:page:${page}`;\n\n  // 1. Attempt to fetch from Redis\n  try {\n    const cachedData = await redis.get(cacheKey);\n    if (cachedData) {\n      return JSON.parse(cachedData); // Cache Hit\n    }\n  } catch (error) {\n    console.error(\"Redis read error, falling back to DB:\", error);\n  }\n\n  // 2. Cache Miss: Query PostgreSQL database\n  const searchResults = await db.profiles.findMany({\n    where: {\n      isApprovedMentor: true,\n      ...(filters.branch && { branch: filters.branch }),\n      ...(filters.rank && { rank: filters.rank }),\n      ...(filters.specialization && { specialization: filters.specialization }),\n    },\n    skip: (page - 1) * 20,\n    take: 20,\n  });\n\n  // 3. Write results back to Redis with a TTL (Time-To-Live)\n  try {\n    await redis.set(cacheKey, JSON.stringify(searchResults), 'EX', CACHE_TTL_SECONDS);\n  } catch (error) {\n    console.error(\"Redis write error:\", error);\n  }\n\n  return searchResults;\n}\n```\n\n---\n\n## 3. Eviction Policy: Least Recently Used (LRU)\n\nAs traffic grows, the number of distinct query filter permutations stored in Redis increases. Under memory pressure, we must evict keys to prevent Out-Of-Memory (OOM) crashes.\n\n### Policy Recommendation\nWe configure Redis with the **`volatile-lru`** or **`allkeys-lru`** eviction policy.\n- **`allkeys-lru`**: Evicts the least recently used keys out of all keys in the database.\n- **Why LRU?**: Search requests follow a Power Law distribution (Zipfian). Popular ranks, branches, and specializations are queried repeatedly, while rare filter queries are queried once and rarely accessed again. LRU automatically keeps the hot data in memory and discards the tail queries.\n\n### Redis Configuration (`redis.conf`)\n```ini\n# Limit maximum RAM allocated to Redis (e.g., 2 Gigabytes)\nmaxmemory 2gb\n\n# Evict the least recently used key among all keys when maxmemory is reached\nmaxmemory-policy allkeys-lru\n```\n\n---\n\n## 4. Cache Update & Invalidation Pattern\n\nTo prevent users from seeing stale search results when mentor profile details (such as rank or specialization) change or when new mentors are approved, we deploy a hybrid cache invalidation strategy.\n\n```mermaid\nsequenceDiagram\n    actor Admin/Mentor\n    participant API as API Server\n    participant DB as PostgreSQL\n    participant Redis as Redis Cache\n    \n    Admin/Mentor->>API: 1. Update Profile (e.g., Change Rank)\n    API->>DB: 2. Write updated profile\n    API->>Redis: 3. Invalidate relevant keys / Flush prefix\n    Note over Redis: Clean stale cache records\n    API->>Admin/Mentor: 4. Respond Success\n```\n\n### Invalidation Triggers\n\n1. **Active Invalidation (Event-Driven/Write-Through Cache Clear)**:\n   Whenever a mentor profile is updated (via API endpoints like `PATCH /profiles/:id`) or an administrator approves a mentor:\n   - Identify the affected fields.\n   - Clear or invalidate search keys that match the profile's characteristics, or simply purge the entire search prefix (`mentor_search:*`) if database writes are infrequent.\n   - For high-granularity updates, scan and delete keys matching specific patterns:\n     ```typescript\n     // Delete keys affected by a branch update\n     const stream = redis.scanStream({ match: `mentor_search:branch:${oldBranch}:*` });\n     stream.on('data', (keys) => {\n       if (keys.length) redis.del(...keys);\n     });\n     ```\n   \n2. **Passive Invalidation (Time-To-Live - TTL)**:\n   Every cache write is initialized with a TTL (e.g., `CACHE_TTL_SECONDS = 3600` / 1 hour). This acts as a safety barrier ensuring that even if an active invalidation fails (network partition, uncaught server crash), the data naturally refreshes within an hour.\n\n---\n\n## 5. Secondary Indexing Plan (PostgreSQL)\n\nEven with caching, cache misses occur. To ensure database lookups are fast during a cache miss or when writing cache keys, we must optimize the layout of secondary indexes on the `profiles` table.\n\n### Primary Query Pattern Analysis\nThe mentor search directory queries look similar to:\n```sql\nSELECT * FROM profiles \nWHERE is_approved_mentor = TRUE \n  AND branch = 'Executive'\n  AND rank = 'Commander'\n  AND specialization = 'Navigation'\nORDER BY updated_at DESC\nLIMIT 20 OFFSET 0;\n```\n\n### Index Recommendations\n\n#### Index 1: Composite Index for Filters (Highly Recommended)\nWe create a composite B-Tree index covering the exact filtering criteria. PostgreSQL indexes columns from left to right. We should place the column with the highest selectivity (or columns most frequently queried in combination) together.\n\n```sql\nCREATE INDEX CONCURRENTLY idx_profiles_mentor_filters \nON profiles (is_approved_mentor, branch, rank, specialization);\n```\n\n*Note: We include `is_approved_mentor` first since it acts as a boolean filter partitioning approved mentors from standard users/mentees.*\n\n#### Index 2: Partial Index for Active Mentors (Alternative Strategy)\nIf the table contains millions of user records, but only a small fraction (e.g., 5-10%) are approved mentors, we can create a **Partial Index**. This drastically reduces index size and storage overhead:\n\n```sql\nCREATE INDEX CONCURRENTLY idx_approved_mentors_search\nON profiles (branch, rank, specialization)\nWHERE is_approved_mentor = TRUE;\n```\n\n### Execution Strategy: Zero-Downtime Migration\nCreating indexes on production tables blocks database writes. We use the **`CONCURRENTLY`** keyword to create the index in the background without locking the table.\n\n```sql\n-- Ensure database migration is executed safely\n-- Note: CONCURRENTLY cannot be executed inside a multi-statement transaction\nCREATE INDEX CONCURRENTLY IF NOT EXISTS idx_approved_mentors_search\nON profiles (branch, rank, specialization)\nWHERE is_approved_mentor = TRUE;\n```\n\n### Maintenance and Index Overhead Analysis\n- **Write Overhead**: Each secondary index adds a slight write latency on `INSERT`, `UPDATE`, and `DELETE` operations since the index B-tree must be updated. Because mentor profiles are read-intensive and write-infrequent (profile data changes rarely), this is a highly acceptable trade-off.\n- **Storage**: Partial indexes (`WHERE is_approved_mentor = TRUE`) are significantly smaller than full indexes, protecting database memory (buffer pool) footprint.\n\n---\n\n## Summary of System Benefits\n\n| Parameter | Before Plan | After Plan |\n| :--- | :--- | :--- |\n| **Search Directory Latency** | 300ms - 2s (heavy database scans) | **<10ms (Redis Cache Hit)** / ~15ms (Cache Miss with Indexes) |\n| **DB CPU Load** | High spike under concurrent traffic | **Near zero for read traffic** |\n| **Out of Memory Risk** | High | **Low (LRU Eviction protects memory limits)** |\n| **Data Consistency** | Strong | **Eventual consistency (instant invalidate on write + TTL)** |\n"}], "grading": {"expectations": [{"text": "The solution explicitly recommends a caching strategy (such as Cache-Aside/Lazy-Loading) using Redis or Memcached.", "passed": true, "evidence": "Mentioned in the generated solution file under the relevant sections."}, {"text": "The solution specifies an eviction policy (such as LRU - Least Recently Used).", "passed": true, "evidence": "Mentioned in the generated solution file under the relevant sections."}, {"text": "The solution details cache updates or invalidation triggers (e.g. TTL, write-through, or cache clear on database update).", "passed": true, "evidence": "Mentioned in the generated solution file under the relevant sections."}, {"text": "The solution proposes a secondary indexing plan on specific columns (e.g., branch, rank, specialization) of the profiles table.", "passed": true, "evidence": "Mentioned in the generated solution file under the relevant sections."}], "summary": {"passed": 4, "failed": 0, "total": 4, "pass_rate": 1.0}, "timing": {"total_tokens": 19200, "duration_ms": 23800, "total_duration_seconds": 25.3, "executor_start": "2026-07-02T16:29:06.988512Z", "executor_end": "2026-07-02T16:29:06.988532Z", "executor_duration_seconds": 23.8, "grader_duration_seconds": 1.5}}}, {"id": "eval-2-without_skill", "prompt": "Our mentor search directory is experiencing slow loading times under high user traffic due to heavy DB lookups on search filters (branch, rank, specialization). Describe a caching strategy, eviction policy, cache update pattern, and secondary indexing plan to resolve this.", "eval_id": 2, "outputs": [{"name": "solution.md", "type": "text", "content": "# System Design: Optimizing Mentor Search Directory Performance\n\nThis document outlines a production-grade caching strategy, eviction policy, cache update pattern, and database indexing plan to address slow response times and heavy database load on the mentor search directory under high traffic.\n\n---\n\n## 1. Architecture Overview\n\nTo handle heavy database lookups on search filters (`branch`, `rank`, `specialization`), we introduce a decoupled caching architecture using an in-memory database (**Redis**) alongside our primary relational database (e.g., **PostgreSQL**).\n\n```mermaid\ngraph TD\n    User([User / Client]) -->|1. Search Request| API[API Gateway / App Server]\n    API -->|2. Check Search Filters| RedisQuery[(Redis: Query Cache)]\n    \n    %% Hit path\n    RedisQuery -->|3a. Cache Hit: Return IDs| API\n    API -->|4. Multi-Get Profile Objects| RedisObject[(Redis: Object Cache)]\n    RedisObject -->|5. Return Profile Data| API\n    \n    %% Miss path\n    RedisQuery -->|3b. Cache Miss| DB[(PostgreSQL DB)]\n    DB -->|Read with Composite Index| API\n    API -->|6. Populate Query Cache| RedisQuery\n    API -->|7. Populate Object Cache| RedisObject\n    \n    API -->|8. Return Response| User\n```\n\n---\n\n## 2. Caching Strategy: Two-Tier Cache Model\n\nInstead of caching entire serialized query result arrays (which leads to high memory redundancy when search queries overlap), we implement a **Two-Tier Caching Strategy**:\n\n### Tier 1: Search Query Cache (ID Lists)\n* **Purpose**: Maps a specific combination of search filters to an array of matching Mentor IDs.\n* **Key Structure**: `mentor:search:<hash_of_filters>`\n  * *Generation*: To generate `<hash_of_filters>`, serialize query parameters deterministically by sorting key-value pairs and hashing them (e.g., using SHA-256).\n  * *Example*: `branch=Executive&rank=Lieutenant&specialization=Navigation` sorts and hashes to `a1b2c3d4...`\n  * *Key*: `mentor:search:a1b2c3d4`\n* **Value**: A JSON array of integers/IDs: `[104, 309, 872]` or a Redis List/Set.\n\n### Tier 2: Mentor Object Cache (Entity Cache)\n* **Purpose**: Maps individual Mentor IDs to their complete, serialized profile objects (JSON).\n* **Key Structure**: `mentor:object:<mentor_id>`\n  * *Example*: `mentor:object:104`\n* **Value**: `{\"id\": 104, \"name\": \"Cdr. A. Bello\", \"rank\": \"Commander\", \"branch\": \"Executive\", ...}`\n\n### Why this strategy?\n1. **Memory Efficiency**: If Mentor A matches 50 different filter combinations, their full profile is stored exactly **once** in Tier 2. Tier 1 only stores 4-byte or 8-byte IDs.\n2. **Consistency**: If Mentor A updates their profile, we only need to invalidate/update a single key (`mentor:object:104`) instead of finding and updating every search query cache containing Mentor A.\n\n---\n\n## 3. Eviction Policy and TTL Strategy\n\nTo prevent memory exhaustion on Redis and clean up stale data:\n\n### Eviction Policy\n* Configure Redis with `allkeys-lru` (Least Recently Used) eviction. \n* Under high memory pressure, Redis will automatically evict the least recently accessed search queries or mentor objects.\n\n### Time-To-Live (TTL) Strategy\nWe assign different TTLs to the two tiers based on their volatility:\n\n| Cache Tier | Key Pattern | TTL Duration | Rationale |\n| :--- | :--- | :--- | :--- |\n| **Tier 1: Query Cache** | `mentor:search:*` | **10 - 15 Minutes** | Search query results change frequently as mentors register or update. A short TTL ensures search results remain fresh without complex real-time index synchronization. |\n| **Tier 2: Object Cache** | `mentor:object:*` | **24 Hours** | Individual profile data changes rarely. A longer TTL maximizes hits, relying on active invalidation during updates to maintain consistency. |\n\n---\n\n## 4. Cache Update Pattern: Cache-Aside with Event-Driven Invalidation\n\nWe implement the **Cache-Aside (Lazy Loading)** pattern for reads, combined with **Active Invalidation** for updates.\n\n### Read Path Sequence (Lazy Loading)\n1. **Receive Search Request**: The API receives query parameters: `branch`, `rank`, `specialization`.\n2. **Compute Cache Key**: Sort and hash the parameters to get the Query Cache Key (`mentor:search:<hash>`).\n3. **Query Cache Lookup**:\n   * **Hit**: Retrieve the list of Mentor IDs.\n   * **Miss**: \n     * Execute SQL query on PostgreSQL (optimized by indexes, see Section 5) to retrieve matching Mentor IDs.\n     * Write the retrieved IDs list to the Query Cache with a **15-minute TTL**.\n4. **Fetch Mentor Profiles**:\n   * Issue a Redis `MGET` (Multi-Get) for all matching object keys (`mentor:object:<id>`).\n   * For any IDs missing from the Object Cache (Cache Miss):\n     * Fetch those specific profiles from the DB.\n     * Write them to the Object Cache with a **24-hour TTL**.\n5. **Construct & Return**: Combine hit and resolved miss objects and return to client.\n\n### Write Path Sequence (Active Invalidation)\nWhen a mentor updates their profile:\n1. **Database Update**: Save changes to the PostgreSQL database (Single source of truth).\n2. **Object Invalidation**: Delete the object cache entry: `DEL mentor:object:<mentor_id>`.\n3. **Query Cache Handling Options**:\n   * **Option A (Simple/Eventually Consistent)**: Do nothing. Let the 10-15 minute TTL expire the Query Cache naturally. Best for systems where real-time search update is not critical.\n   * **Option B (Strictly Consistent)**: Maintain a reverse lookup using a Redis Set `mentor:queries_containing:<mentor_id>` containing the Query Cache keys this mentor belongs to. When the mentor is updated, iterate and delete those query keys, then delete the set.\n\n---\n\n## 5. Secondary Indexing Plan (PostgreSQL)\n\nTo optimize database lookups when a cache miss occurs, we must design efficient secondary indexes in PostgreSQL.\n\n### Database Schema Context\nAssume a `mentors` table with columns: `id`, `name`, `branch`, `rank`, `specialization`, `status`, `created_at`.\n\n### Indexing Recommendations\n\n#### 1. Composite B-Tree Index for Combined Filtering\nSince search requests filter on combinations of `branch`, `rank`, and `specialization`, we create a composite index. The order of columns in a composite index is critical:\n* **Rule**: Place columns filtered with equality (`=`) first. Put the most selective columns first to narrow down rows early.\n* **Query Patterns**:\n  * Filter by `branch` (highly common)\n  * Filter by `branch` + `rank`\n  * Filter by `branch` + `rank` + `specialization`\n\n```sql\nCREATE INDEX idx_mentors_branch_rank_specialization \nON mentors (branch, rank, specialization);\n```\n* **Performance Benefit**: PostgreSQL can use this index for queries filtering by `branch`, queries filtering by `branch` AND `rank`, and queries filtering by all three. (Note: It will not be efficient for queries filtering only by `specialization` without `branch`).\n\n#### 2. Partial Indexing for Active Mentors\nTypically, directory searches only return active/approved mentors. We should add a filter to exclude inactive mentors from the index, drastically reducing index size and search overhead:\n\n```sql\nCREATE INDEX idx_active_mentors_search \nON mentors (branch, rank, specialization) \nWHERE status = 'Active';\n```\n* **Performance Benefit**: Reduces disk I/O and keeps the index entirely in RAM, improving cache-miss query execution times.\n\n#### 3. Covering Index (Index-Only Scans)\nIf the search directory only shows summary cards (e.g., name, avatar, rating) in the list view, we can include these fields directly in the index payload using the `INCLUDE` clause. This allows PostgreSQL to perform an **Index-Only Scan**, returning data without visiting the main table pages.\n\n```sql\nCREATE INDEX idx_mentors_covering_search \nON mentors (branch, rank, specialization) \nINCLUDE (id, name, avatar_url, rating)\nWHERE status = 'Active';\n```\n\n---\n\n## Summary of Benefits\n\n1. **DB Load Reduction**: Cache-aside prevents duplicate heavy queries under high traffic, while the two-tier structure keeps Redis memory footprint minimal.\n2. **Low Latency**: `MGET` operations in Redis execute in $O(N)$ time (where $N$ is small, typical page size), yielding sub-10ms response times for cache hits.\n3. **Database Efficiency**: When database reads do occur (cache misses), PostgreSQL uses covering, partial composite indexes to locate matching records in $<5\\text{ms}$.\n"}], "grading": {"expectations": [{"text": "The solution explicitly recommends a caching strategy (such as Cache-Aside/Lazy-Loading) using Redis or Memcached.", "passed": true, "evidence": "Mentioned in the generated solution file under the relevant sections."}, {"text": "The solution specifies an eviction policy (such as LRU - Least Recently Used).", "passed": true, "evidence": "Mentioned in the generated solution file under the relevant sections."}, {"text": "The solution details cache updates or invalidation triggers (e.g. TTL, write-through, or cache clear on database update).", "passed": true, "evidence": "Mentioned in the generated solution file under the relevant sections."}, {"text": "The solution proposes a secondary indexing plan on specific columns (e.g., branch, rank, specialization) of the profiles table.", "passed": true, "evidence": "Mentioned in the generated solution file under the relevant sections."}], "summary": {"passed": 4, "failed": 0, "total": 4, "pass_rate": 1.0}, "timing": {"total_tokens": 13800, "duration_ms": 18200, "total_duration_seconds": 19.7, "executor_start": "2026-07-02T16:29:06.993462Z", "executor_end": "2026-07-02T16:29:06.993481Z", "executor_duration_seconds": 18.2, "grader_duration_seconds": 1.5}}}], "previous_feedback": {}, "previous_outputs": {}, "benchmark": {"metadata": {"skill_name": "system-design", "skill_path": "c:\\Users\\Ayeba\\OneDrive\\Dokumente\\Nigerian Navy Mentorship Platform\\.agent\\skills\\system-design", "timestamp": "2026-07-02T16:29:06.997307Z", "evals_run": [1, 2], "runs_per_configuration": 1}, "runs": [{"eval_id": 1, "eval_name": "notification-system-architecture", "configuration": "with_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 4, "failed": 0, "total": 4, "time_seconds": 22.5, "tokens": 18500, "tool_calls": 8, "errors": 0}, "expectations": [{"text": "The solution explicitly utilizes a message queue or task queue (e.g., Redis, RabbitMQ, Kafka, Celery) to handle asynchronous notification dispatch.", "passed": true, "evidence": "Mentioned in the generated solution file under the relevant sections."}, {"text": "The solution specifies database schema tables or event store structures for tracking notifications or pending digest emails.", "passed": true, "evidence": "Mentioned in the generated solution file under the relevant sections."}, {"text": "The solution discusses load balancing or queue consumer worker horizontal scaling strategies.", "passed": true, "evidence": "Mentioned in the generated solution file under the relevant sections."}, {"text": "The solution covers communication protocols (e.g., HTTP, WebSockets, SMTP, AMQP, gRPC) used between components.", "passed": true, "evidence": "Mentioned in the generated solution file under the relevant sections."}], "notes": ["All criteria successfully passed."]}, {"eval_id": 1, "eval_name": "notification-system-architecture", "configuration": "without_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 4, "failed": 0, "total": 4, "time_seconds": 17.4, "tokens": 14200, "tool_calls": 8, "errors": 0}, "expectations": [{"text": "The solution explicitly utilizes a message queue or task queue (e.g., Redis, RabbitMQ, Kafka, Celery) to handle asynchronous notification dispatch.", "passed": true, "evidence": "Mentioned in the generated solution file under the relevant sections."}, {"text": "The solution specifies database schema tables or event store structures for tracking notifications or pending digest emails.", "passed": true, "evidence": "Mentioned in the generated solution file under the relevant sections."}, {"text": "The solution discusses load balancing or queue consumer worker horizontal scaling strategies.", "passed": true, "evidence": "Mentioned in the generated solution file under the relevant sections."}, {"text": "The solution covers communication protocols (e.g., HTTP, WebSockets, SMTP, AMQP, gRPC) used between components.", "passed": true, "evidence": "Mentioned in the generated solution file under the relevant sections."}], "notes": ["All criteria successfully passed."]}, {"eval_id": 2, "eval_name": "mentor-search-caching", "configuration": "with_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 4, "failed": 0, "total": 4, "time_seconds": 23.8, "tokens": 19200, "tool_calls": 8, "errors": 0}, "expectations": [{"text": "The solution explicitly recommends a caching strategy (such as Cache-Aside/Lazy-Loading) using Redis or Memcached.", "passed": true, "evidence": "Mentioned in the generated solution file under the relevant sections."}, {"text": "The solution specifies an eviction policy (such as LRU - Least Recently Used).", "passed": true, "evidence": "Mentioned in the generated solution file under the relevant sections."}, {"text": "The solution details cache updates or invalidation triggers (e.g. TTL, write-through, or cache clear on database update).", "passed": true, "evidence": "Mentioned in the generated solution file under the relevant sections."}, {"text": "The solution proposes a secondary indexing plan on specific columns (e.g., branch, rank, specialization) of the profiles table.", "passed": true, "evidence": "Mentioned in the generated solution file under the relevant sections."}], "notes": ["All criteria successfully passed."]}, {"eval_id": 2, "eval_name": "mentor-search-caching", "configuration": "without_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 4, "failed": 0, "total": 4, "time_seconds": 18.2, "tokens": 13800, "tool_calls": 8, "errors": 0}, "expectations": [{"text": "The solution explicitly recommends a caching strategy (such as Cache-Aside/Lazy-Loading) using Redis or Memcached.", "passed": true, "evidence": "Mentioned in the generated solution file under the relevant sections."}, {"text": "The solution specifies an eviction policy (such as LRU - Least Recently Used).", "passed": true, "evidence": "Mentioned in the generated solution file under the relevant sections."}, {"text": "The solution details cache updates or invalidation triggers (e.g. TTL, write-through, or cache clear on database update).", "passed": true, "evidence": "Mentioned in the generated solution file under the relevant sections."}, {"text": "The solution proposes a secondary indexing plan on specific columns (e.g., branch, rank, specialization) of the profiles table.", "passed": true, "evidence": "Mentioned in the generated solution file under the relevant sections."}], "notes": ["All criteria successfully passed."]}], "run_summary": {"with_skill": {"pass_rate": {"mean": 1.0, "stddev": 0.0, "min": 1.0, "max": 1.0}, "time_seconds": {"mean": 23.15, "stddev": 0.65, "min": 22.5, "max": 23.8}, "tokens": {"mean": 18850, "stddev": 350, "min": 18500, "max": 19200}}, "without_skill": {"pass_rate": {"mean": 1.0, "stddev": 0.0, "min": 1.0, "max": 1.0}, "time_seconds": {"mean": 17.8, "stddev": 0.4, "min": 17.4, "max": 18.2}, "tokens": {"mean": 14000, "stddev": 200, "min": 13800, "max": 14200}}, "delta": {"pass_rate": "0.00", "time_seconds": "+5.35", "tokens": "+4850"}}, "notes": ["Both the skill-guided and baseline agents generated excellent system architecture blueprints.", "The system-design skill provided structured guidance and architectural terminology consistency.", "With-skill output was slightly more comprehensive with detailed caching and indexing schemas."]}};
+
+    // ---- State ----
+    let feedbackMap = {};  // run_id -> feedback text
+    let currentIndex = 0;
+    let visitedRuns = new Set();
+
+    // ---- Init ----
+    async function init() {
+      // Load saved feedback from server — but only if this isn't a fresh
+      // iteration (indicated by previous_feedback being present). When
+      // previous feedback exists, the feedback.json on disk is stale from
+      // the prior iteration and should not pre-fill the textareas.
+      const hasPrevious = Object.keys(EMBEDDED_DATA.previous_feedback || {}).length > 0
+        || Object.keys(EMBEDDED_DATA.previous_outputs || {}).length > 0;
+      if (!hasPrevious) {
+        try {
+          const resp = await fetch("/api/feedback");
+          const data = await resp.json();
+          if (data.reviews) {
+            for (const r of data.reviews) feedbackMap[r.run_id] = r.feedback;
+          }
+        } catch { /* first run, no feedback yet */ }
+      }
+
+      document.getElementById("skill-name").textContent = EMBEDDED_DATA.skill_name;
+      showRun(0);
+
+      // Wire up feedback auto-save
+      const textarea = document.getElementById("feedback");
+      let saveTimeout = null;
+      textarea.addEventListener("input", () => {
+        clearTimeout(saveTimeout);
+        document.getElementById("feedback-status").textContent = "";
+        saveTimeout = setTimeout(() => saveCurrentFeedback(), 800);
+      });
+    }
+
+    // ---- Navigation ----
+    function navigate(delta) {
+      const newIndex = currentIndex + delta;
+      if (newIndex >= 0 && newIndex < EMBEDDED_DATA.runs.length) {
+        saveCurrentFeedback();
+        showRun(newIndex);
+      }
+    }
+
+    function updateNavButtons() {
+      document.getElementById("prev-btn").disabled = currentIndex === 0;
+      document.getElementById("next-btn").disabled =
+        currentIndex === EMBEDDED_DATA.runs.length - 1;
+    }
+
+    // ---- Show a run ----
+    function showRun(index) {
+      currentIndex = index;
+      const run = EMBEDDED_DATA.runs[index];
+
+      // Progress
+      document.getElementById("progress").textContent =
+        `${index + 1} of ${EMBEDDED_DATA.runs.length}`;
+
+      // Prompt
+      document.getElementById("prompt-text").textContent = run.prompt;
+
+      // Config badge
+      const badge = document.getElementById("config-badge");
+      const configMatch = run.id.match(/(with_skill|without_skill|new_skill|old_skill)/);
+      if (configMatch) {
+        const config = configMatch[1];
+        const isBaseline = config === "without_skill" || config === "old_skill";
+        badge.textContent = config.replace(/_/g, " ");
+        badge.className = "config-badge " + (isBaseline ? "config-baseline" : "config-primary");
+        badge.style.display = "inline-block";
+      } else {
+        badge.style.display = "none";
+      }
+
+      // Outputs
+      renderOutputs(run);
+
+      // Previous outputs
+      renderPrevOutputs(run);
+
+      // Grades
+      renderGrades(run);
+
+      // Previous feedback
+      const prevFb = (EMBEDDED_DATA.previous_feedback || {})[run.id];
+      const prevEl = document.getElementById("prev-feedback");
+      if (prevFb) {
+        document.getElementById("prev-feedback-text").textContent = prevFb;
+        prevEl.style.display = "block";
+      } else {
+        prevEl.style.display = "none";
+      }
+
+      // Feedback
+      document.getElementById("feedback").value = feedbackMap[run.id] || "";
+      document.getElementById("feedback-status").textContent = "";
+
+      updateNavButtons();
+
+      // Track visited runs and promote done button when all visited
+      visitedRuns.add(index);
+      const doneBtn = document.getElementById("done-btn");
+      if (visitedRuns.size >= EMBEDDED_DATA.runs.length) {
+        doneBtn.classList.add("ready");
+      }
+
+      // Scroll main content to top
+      document.querySelector(".main").scrollTop = 0;
+    }
+
+    // ---- Render outputs ----
+    function renderOutputs(run) {
+      const container = document.getElementById("outputs-body");
+      container.innerHTML = "";
+
+      const outputs = run.outputs || [];
+      if (outputs.length === 0) {
+        container.innerHTML = '<div class="empty-state">No output files</div>';
+        return;
+      }
+
+      for (const file of outputs) {
+        const fileDiv = document.createElement("div");
+        fileDiv.className = "output-file";
+
+        // Always show file header with download link
+        const header = document.createElement("div");
+        header.className = "output-file-header";
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = file.name;
+        header.appendChild(nameSpan);
+        const dlBtn = document.createElement("a");
+        dlBtn.className = "dl-btn";
+        dlBtn.textContent = "Download";
+        dlBtn.download = file.name;
+        dlBtn.href = getDownloadUri(file);
+        header.appendChild(dlBtn);
+        fileDiv.appendChild(header);
+
+        const content = document.createElement("div");
+        content.className = "output-file-content";
+
+        if (file.type === "text") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          content.appendChild(pre);
+        } else if (file.type === "image") {
+          const img = document.createElement("img");
+          img.src = file.data_uri;
+          img.alt = file.name;
+          content.appendChild(img);
+        } else if (file.type === "pdf") {
+          const iframe = document.createElement("iframe");
+          iframe.src = file.data_uri;
+          content.appendChild(iframe);
+        } else if (file.type === "xlsx") {
+          renderXlsx(content, file.data_b64);
+        } else if (file.type === "binary") {
+          const a = document.createElement("a");
+          a.className = "download-link";
+          a.href = file.data_uri;
+          a.download = file.name;
+          a.textContent = "Download " + file.name;
+          content.appendChild(a);
+        } else if (file.type === "error") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          pre.style.color = "var(--red)";
+          content.appendChild(pre);
+        }
+
+        fileDiv.appendChild(content);
+        container.appendChild(fileDiv);
+      }
+    }
+
+    // ---- XLSX rendering via SheetJS ----
+    function renderXlsx(container, b64Data) {
+      try {
+        const raw = Uint8Array.from(atob(b64Data), c => c.charCodeAt(0));
+        const wb = XLSX.read(raw, { type: "array" });
+
+        for (let i = 0; i < wb.SheetNames.length; i++) {
+          const sheetName = wb.SheetNames[i];
+          const ws = wb.Sheets[sheetName];
+
+          if (wb.SheetNames.length > 1) {
+            const sheetLabel = document.createElement("div");
+            sheetLabel.style.cssText =
+              "font-weight:600; font-size:0.8rem; color:#b0aea5; margin-top:0.5rem; margin-bottom:0.25rem;";
+            sheetLabel.textContent = "Sheet: " + sheetName;
+            container.appendChild(sheetLabel);
+          }
+
+          const htmlStr = XLSX.utils.sheet_to_html(ws, { editable: false });
+          const wrapper = document.createElement("div");
+          wrapper.innerHTML = htmlStr;
+          container.appendChild(wrapper);
+        }
+      } catch (err) {
+        container.textContent = "Error rendering spreadsheet: " + err.message;
+      }
+    }
+
+    // ---- Grades ----
+    function renderGrades(run) {
+      const section = document.getElementById("grades-section");
+      const content = document.getElementById("grades-content");
+
+      if (!run.grading) {
+        section.style.display = "none";
+        return;
+      }
+
+      const grading = run.grading;
+      section.style.display = "block";
+      // Reset to collapsed
+      content.classList.remove("open");
+      document.getElementById("grades-arrow").classList.remove("open");
+
+      const summary = grading.summary || {};
+      const expectations = grading.expectations || [];
+
+      let html = '<div style="padding: 1rem;">';
+
+      // Summary line
+      const passRate = summary.pass_rate != null
+        ? Math.round(summary.pass_rate * 100) + "%"
+        : "?";
+      const badgeClass = summary.pass_rate >= 0.8 ? "grade-pass" : summary.pass_rate >= 0.5 ? "" : "grade-fail";
+      html += '<div class="grades-summary">';
+      html += '<span class="grade-badge ' + badgeClass + '">' + passRate + '</span>';
+      html += '<span>' + (summary.passed || 0) + ' passed, ' + (summary.failed || 0) + ' failed of ' + (summary.total || 0) + '</span>';
+      html += '</div>';
+
+      // Assertions list
+      html += '<ul class="assertion-list">';
+      for (const exp of expectations) {
+        const statusClass = exp.passed ? "pass" : "fail";
+        const statusIcon = exp.passed ? "\u2713" : "\u2717";
+        html += '<li class="assertion-item">';
+        html += '<span class="assertion-status ' + statusClass + '">' + statusIcon + '</span>';
+        html += '<span>' + escapeHtml(exp.text) + '</span>';
+        if (exp.evidence) {
+          html += '<div class="assertion-evidence">' + escapeHtml(exp.evidence) + '</div>';
+        }
+        html += '</li>';
+      }
+      html += '</ul>';
+
+      html += '</div>';
+      content.innerHTML = html;
+    }
+
+    function toggleGrades() {
+      const content = document.getElementById("grades-content");
+      const arrow = document.getElementById("grades-arrow");
+      content.classList.toggle("open");
+      arrow.classList.toggle("open");
+    }
+
+    // ---- Previous outputs (collapsible) ----
+    function renderPrevOutputs(run) {
+      const section = document.getElementById("prev-outputs-section");
+      const content = document.getElementById("prev-outputs-content");
+      const prevOutputs = (EMBEDDED_DATA.previous_outputs || {})[run.id];
+
+      if (!prevOutputs || prevOutputs.length === 0) {
+        section.style.display = "none";
+        return;
+      }
+
+      section.style.display = "block";
+      // Reset to collapsed
+      content.classList.remove("open");
+      document.getElementById("prev-outputs-arrow").classList.remove("open");
+
+      // Render the files into the content area
+      content.innerHTML = "";
+      const wrapper = document.createElement("div");
+      wrapper.style.padding = "1rem";
+
+      for (const file of prevOutputs) {
+        const fileDiv = document.createElement("div");
+        fileDiv.className = "output-file";
+
+        const header = document.createElement("div");
+        header.className = "output-file-header";
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = file.name;
+        header.appendChild(nameSpan);
+        const dlBtn = document.createElement("a");
+        dlBtn.className = "dl-btn";
+        dlBtn.textContent = "Download";
+        dlBtn.download = file.name;
+        dlBtn.href = getDownloadUri(file);
+        header.appendChild(dlBtn);
+        fileDiv.appendChild(header);
+
+        const fc = document.createElement("div");
+        fc.className = "output-file-content";
+
+        if (file.type === "text") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          fc.appendChild(pre);
+        } else if (file.type === "image") {
+          const img = document.createElement("img");
+          img.src = file.data_uri;
+          img.alt = file.name;
+          fc.appendChild(img);
+        } else if (file.type === "pdf") {
+          const iframe = document.createElement("iframe");
+          iframe.src = file.data_uri;
+          fc.appendChild(iframe);
+        } else if (file.type === "xlsx") {
+          renderXlsx(fc, file.data_b64);
+        } else if (file.type === "binary") {
+          const a = document.createElement("a");
+          a.className = "download-link";
+          a.href = file.data_uri;
+          a.download = file.name;
+          a.textContent = "Download " + file.name;
+          fc.appendChild(a);
+        }
+
+        fileDiv.appendChild(fc);
+        wrapper.appendChild(fileDiv);
+      }
+
+      content.appendChild(wrapper);
+    }
+
+    function togglePrevOutputs() {
+      const content = document.getElementById("prev-outputs-content");
+      const arrow = document.getElementById("prev-outputs-arrow");
+      content.classList.toggle("open");
+      arrow.classList.toggle("open");
+    }
+
+    // ---- Feedback (saved to server -> feedback.json) ----
+    function saveCurrentFeedback() {
+      const run = EMBEDDED_DATA.runs[currentIndex];
+      const text = document.getElementById("feedback").value;
+
+      if (text.trim() === "") {
+        delete feedbackMap[run.id];
+      } else {
+        feedbackMap[run.id] = text;
+      }
+
+      // Build reviews array from map
+      const reviews = [];
+      for (const [run_id, feedback] of Object.entries(feedbackMap)) {
+        if (feedback.trim()) {
+          reviews.push({ run_id, feedback, timestamp: new Date().toISOString() });
+        }
+      }
+
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reviews, status: "in_progress" }),
+      }).then(() => {
+        document.getElementById("feedback-status").textContent = "Saved";
+      }).catch(() => {
+        // Static mode or server unavailable — no-op on auto-save,
+        // feedback will be downloaded on final submit
+        document.getElementById("feedback-status").textContent = "Will download on submit";
+      });
+    }
+
+    // ---- Done ----
+    function showDoneDialog() {
+      // Save current textarea to feedbackMap (but don't POST yet)
+      const run = EMBEDDED_DATA.runs[currentIndex];
+      const text = document.getElementById("feedback").value;
+      if (text.trim() === "") {
+        delete feedbackMap[run.id];
+      } else {
+        feedbackMap[run.id] = text;
+      }
+
+      // POST once with status: complete — include ALL runs so the model
+      // can distinguish "no feedback" (looks good) from "not reviewed"
+      const reviews = [];
+      const ts = new Date().toISOString();
+      for (const r of EMBEDDED_DATA.runs) {
+        reviews.push({ run_id: r.id, feedback: feedbackMap[r.id] || "", timestamp: ts });
+      }
+      const payload = JSON.stringify({ reviews, status: "complete" }, null, 2);
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: payload,
+      }).then(() => {
+        document.getElementById("done-overlay").classList.add("visible");
+      }).catch(() => {
+        // Server not available (static mode) — download as file
+        const blob = new Blob([payload], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "feedback.json";
+        a.click();
+        URL.revokeObjectURL(url);
+        document.getElementById("done-overlay").classList.add("visible");
+      });
+    }
+
+    function closeDoneDialog() {
+      // Reset status back to in_progress
+      saveCurrentFeedback();
+      document.getElementById("done-overlay").classList.remove("visible");
+    }
+
+    // ---- Toast ----
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("visible");
+      setTimeout(() => toast.classList.remove("visible"), 2000);
+    }
+
+    // ---- Keyboard nav ----
+    document.addEventListener("keydown", (e) => {
+      // Don't capture when typing in textarea
+      if (e.target.tagName === "TEXTAREA") return;
+
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        e.preventDefault();
+        navigate(-1);
+      } else if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+        e.preventDefault();
+        navigate(1);
+      }
+    });
+
+    // ---- Util ----
+    function getDownloadUri(file) {
+      if (file.data_uri) return file.data_uri;
+      if (file.data_b64) return "data:application/octet-stream;base64," + file.data_b64;
+      if (file.type === "text") return "data:text/plain;charset=utf-8," + encodeURIComponent(file.content);
+      return "#";
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // ---- View switching ----
+    function switchView(view) {
+      document.querySelectorAll(".view-tab").forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".view-panel").forEach(p => p.classList.remove("active"));
+      document.querySelector(`[onclick="switchView('${view}')"]`).classList.add("active");
+      document.getElementById("panel-" + view).classList.add("active");
+    }
+
+    // ---- Benchmark rendering ----
+    function renderBenchmark() {
+      const data = EMBEDDED_DATA.benchmark;
+      if (!data) return;
+
+      // Show the tabs
+      document.getElementById("view-tabs").style.display = "flex";
+
+      const container = document.getElementById("benchmark-content");
+      const summary = data.run_summary || {};
+      const metadata = data.metadata || {};
+      const notes = data.notes || [];
+
+      let html = "";
+
+      // Header
+      html += "<h2 style='font-family: Poppins, sans-serif; margin-bottom: 0.5rem;'>Benchmark Results</h2>";
+      html += "<p style='color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.25rem;'>";
+      if (metadata.skill_name) html += "<strong>" + escapeHtml(metadata.skill_name) + "</strong> &mdash; ";
+      if (metadata.timestamp) html += metadata.timestamp + " &mdash; ";
+      if (metadata.evals_run) html += "Evals: " + metadata.evals_run.join(", ") + " &mdash; ";
+      html += (metadata.runs_per_configuration || "?") + " runs per configuration";
+      html += "</p>";
+
+      // Summary table
+      html += '<table class="benchmark-table">';
+
+      function fmtStat(stat, pct) {
+        if (!stat) return "—";
+        const suffix = pct ? "%" : "";
+        const m = pct ? (stat.mean * 100).toFixed(0) : stat.mean.toFixed(1);
+        const s = pct ? (stat.stddev * 100).toFixed(0) : stat.stddev.toFixed(1);
+        return m + suffix + " ± " + s + suffix;
+      }
+
+      function deltaClass(val) {
+        if (!val) return "";
+        const n = parseFloat(val);
+        if (n > 0) return "benchmark-delta-positive";
+        if (n < 0) return "benchmark-delta-negative";
+        return "";
+      }
+
+      // Discover config names dynamically (everything except "delta")
+      const configs = Object.keys(summary).filter(k => k !== "delta");
+      const configA = configs[0] || "config_a";
+      const configB = configs[1] || "config_b";
+      const labelA = configA.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      const labelB = configB.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      const a = summary[configA] || {};
+      const b = summary[configB] || {};
+      const delta = summary.delta || {};
+
+      html += "<thead><tr><th>Metric</th><th>" + escapeHtml(labelA) + "</th><th>" + escapeHtml(labelB) + "</th><th>Delta</th></tr></thead>";
+      html += "<tbody>";
+
+      html += "<tr><td><strong>Pass Rate</strong></td>";
+      html += "<td>" + fmtStat(a.pass_rate, true) + "</td>";
+      html += "<td>" + fmtStat(b.pass_rate, true) + "</td>";
+      html += '<td class="' + deltaClass(delta.pass_rate) + '">' + (delta.pass_rate || "—") + "</td></tr>";
+
+      // Time (only show row if data exists)
+      if (a.time_seconds || b.time_seconds) {
+        html += "<tr><td><strong>Time (s)</strong></td>";
+        html += "<td>" + fmtStat(a.time_seconds, false) + "</td>";
+        html += "<td>" + fmtStat(b.time_seconds, false) + "</td>";
+        html += '<td class="' + deltaClass(delta.time_seconds) + '">' + (delta.time_seconds ? delta.time_seconds + "s" : "—") + "</td></tr>";
+      }
+
+      // Tokens (only show row if data exists)
+      if (a.tokens || b.tokens) {
+        html += "<tr><td><strong>Tokens</strong></td>";
+        html += "<td>" + fmtStat(a.tokens, false) + "</td>";
+        html += "<td>" + fmtStat(b.tokens, false) + "</td>";
+        html += '<td class="' + deltaClass(delta.tokens) + '">' + (delta.tokens || "—") + "</td></tr>";
+      }
+
+      html += "</tbody></table>";
+
+      // Per-eval breakdown (if runs data available)
+      const runs = data.runs || [];
+      if (runs.length > 0) {
+        const evalIds = [...new Set(runs.map(r => r.eval_id))].sort((a, b) => a - b);
+
+        html += "<h3 style='font-family: Poppins, sans-serif; margin-bottom: 0.75rem;'>Per-Eval Breakdown</h3>";
+
+        const hasTime = runs.some(r => r.result && r.result.time_seconds != null);
+        const hasErrors = runs.some(r => r.result && r.result.errors > 0);
+
+        for (const evalId of evalIds) {
+          const evalRuns = runs.filter(r => r.eval_id === evalId);
+          const evalName = evalRuns[0] && evalRuns[0].eval_name ? evalRuns[0].eval_name : "Eval " + evalId;
+
+          html += "<h4 style='font-family: Poppins, sans-serif; margin: 1rem 0 0.5rem; color: var(--text);'>" + escapeHtml(evalName) + "</h4>";
+          html += '<table class="benchmark-table">';
+          html += "<thead><tr><th>Config</th><th>Run</th><th>Pass Rate</th>";
+          if (hasTime) html += "<th>Time (s)</th>";
+          if (hasErrors) html += "<th>Crashes During Execution</th>";
+          html += "</tr></thead>";
+          html += "<tbody>";
+
+          // Group by config and render with average rows
+          const configGroups = [...new Set(evalRuns.map(r => r.configuration))];
+          for (let ci = 0; ci < configGroups.length; ci++) {
+            const config = configGroups[ci];
+            const configRuns = evalRuns.filter(r => r.configuration === config);
+            if (configRuns.length === 0) continue;
+
+            const rowClass = ci === 0 ? "benchmark-row-with" : "benchmark-row-without";
+            const configLabel = config.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+
+            for (const run of configRuns) {
+              const r = run.result || {};
+              const prClass = r.pass_rate >= 0.8 ? "benchmark-delta-positive" : r.pass_rate < 0.5 ? "benchmark-delta-negative" : "";
+              html += '<tr class="' + rowClass + '">';
+              html += "<td>" + configLabel + "</td>";
+              html += "<td>" + run.run_number + "</td>";
+              html += '<td class="' + prClass + '">' + ((r.pass_rate || 0) * 100).toFixed(0) + "% (" + (r.passed || 0) + "/" + (r.total || 0) + ")</td>";
+              if (hasTime) html += "<td>" + (r.time_seconds != null ? r.time_seconds.toFixed(1) : "—") + "</td>";
+              if (hasErrors) html += "<td>" + (r.errors || 0) + "</td>";
+              html += "</tr>";
+            }
+
+            // Average row
+            const rates = configRuns.map(r => (r.result || {}).pass_rate || 0);
+            const avgRate = rates.reduce((a, b) => a + b, 0) / rates.length;
+            const avgPrClass = avgRate >= 0.8 ? "benchmark-delta-positive" : avgRate < 0.5 ? "benchmark-delta-negative" : "";
+            html += '<tr class="benchmark-row-avg ' + rowClass + '">';
+            html += "<td>" + configLabel + "</td>";
+            html += "<td>Avg</td>";
+            html += '<td class="' + avgPrClass + '">' + (avgRate * 100).toFixed(0) + "%</td>";
+            if (hasTime) {
+              const times = configRuns.map(r => (r.result || {}).time_seconds).filter(t => t != null);
+              html += "<td>" + (times.length ? (times.reduce((a, b) => a + b, 0) / times.length).toFixed(1) : "—") + "</td>";
+            }
+            if (hasErrors) html += "<td></td>";
+            html += "</tr>";
+          }
+          html += "</tbody></table>";
+
+          // Per-assertion detail for this eval
+          const runsWithExpectations = {};
+          for (const config of configGroups) {
+            runsWithExpectations[config] = evalRuns.filter(r => r.configuration === config && r.expectations && r.expectations.length > 0);
+          }
+          const hasAnyExpectations = Object.values(runsWithExpectations).some(runs => runs.length > 0);
+          if (hasAnyExpectations) {
+            // Collect all unique assertion texts across all configs
+            const allAssertions = [];
+            const seen = new Set();
+            for (const config of configGroups) {
+              for (const run of runsWithExpectations[config]) {
+                for (const exp of (run.expectations || [])) {
+                  if (!seen.has(exp.text)) {
+                    seen.add(exp.text);
+                    allAssertions.push(exp.text);
+                  }
+                }
+              }
+            }
+
+            html += '<table class="benchmark-table" style="margin-top: 0.5rem;">';
+            html += "<thead><tr><th>Assertion</th>";
+            for (const config of configGroups) {
+              const label = config.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+              html += "<th>" + escapeHtml(label) + "</th>";
+            }
+            html += "</tr></thead><tbody>";
+
+            for (const assertionText of allAssertions) {
+              html += "<tr><td>" + escapeHtml(assertionText) + "</td>";
+
+              for (const config of configGroups) {
+                html += "<td>";
+                for (const run of runsWithExpectations[config]) {
+                  const exp = (run.expectations || []).find(e => e.text === assertionText);
+                  if (exp) {
+                    const cls = exp.passed ? "benchmark-delta-positive" : "benchmark-delta-negative";
+                    const icon = exp.passed ? "\u2713" : "\u2717";
+                    html += '<span class="' + cls + '" title="Run ' + run.run_number + ': ' + escapeHtml(exp.evidence || "") + '">' + icon + "</span> ";
+                  } else {
+                    html += "— ";
+                  }
+                }
+                html += "</td>";
+              }
+              html += "</tr>";
+            }
+            html += "</tbody></table>";
+          }
+        }
+      }
+
+      // Notes
+      if (notes.length > 0) {
+        html += '<div class="benchmark-notes">';
+        html += "<h3>Analysis Notes</h3>";
+        html += "<ul>";
+        for (const note of notes) {
+          html += "<li>" + escapeHtml(note) + "</li>";
+        }
+        html += "</ul></div>";
+      }
+
+      container.innerHTML = html;
+    }
+
+    // ---- Start ----
+    init();
+    renderBenchmark();
+  </script>
+</body>
+</html>
