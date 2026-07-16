@@ -9,9 +9,10 @@ import { api } from '@/lib/api';
 import { Card, Button, Avatar, Badge, Spinner, EmptyState, ProgressBar, RoleBadge, VerificationBadge, StatCard, SectionTitle } from '@/components/ui';
 import type { Relationship, Session, Goal, MentorshipRequest, AdminStats } from '@/lib/types';
 import { Users, Calendar, Target, MessageSquare, UserCheck, Clock, TrendingUp, ShieldCheck, Search, BookOpen, Newspaper, Library, ChevronRight, UserPlus, Megaphone } from 'lucide-react';
+import CompleteProfileOnboarding from '@/components/CompleteProfileOnboarding';
 
 export default function Dashboard() {
-  const { profile } = useAuth();
+  const { user, profile, loading: authLoading, refreshProfile } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [relationships, setRelationships] = useState<Relationship[]>([]);
@@ -23,8 +24,12 @@ export default function Dashboard() {
   const [announcements, setAnnouncements] = useState<any[]>([]);
 
   useEffect(() => {
+    if (authLoading) return;
+    if (!profile) {
+      setLoading(false);
+      return;
+    }
     const load = async () => {
-      if (!profile) return;
       try {
         if (profile.role === 'admin') {
           const [admStats, admPending, anns] = await Promise.all([
@@ -72,7 +77,7 @@ export default function Dashboard() {
     return announcements.find(a => a.target_role === 'all' || a.target_role === mappedRole);
   }, [announcements, profile]);
 
-  if (loading) return (
+  if (authLoading || (profile && loading)) return (
     <div className="space-y-5">
       <div className="h-24 rounded-lg skeleton" />
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -84,7 +89,9 @@ export default function Dashboard() {
       </div>
     </div>
   );
-  if (!profile) return null;
+  if (!profile) {
+    return <CompleteProfileOnboarding user={user} onComplete={refreshProfile} />;
+  }
 
   const activeRels = relationships.filter(r => r.status === 'active');
   const upcomingSessions = sessions.filter(s => s.status === 'scheduled' && new Date(s.scheduled_at) >= new Date()).slice(0, 5);

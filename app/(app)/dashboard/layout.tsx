@@ -7,7 +7,7 @@ import { useAuth } from '@/components/AuthContext';
 import { Spinner } from '@/components/ui';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, profile, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -22,6 +22,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <Spinner size="lg" />
       </div>
     );
+  }
+
+  if (!profile) {
+    return <div className="min-h-screen bg-navy-50">{children}</div>;
   }
 
   return <Layout>{children}</Layout>;
