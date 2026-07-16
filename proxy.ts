@@ -10,7 +10,7 @@ import { getLimiterForPath, isRateLimitConfigured } from '@/lib/rate-limit';
  * If Upstash environment variables are not configured, the middleware
  * passes through all requests without rate limiting.
  */
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   // Skip rate limiting if not configured
   if (!isRateLimitConfigured()) {
     return NextResponse.next();
