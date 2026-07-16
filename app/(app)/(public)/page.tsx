@@ -302,7 +302,7 @@ export default function PublicHome() {
                 playsInline
                 style={{ width: "100%", height: "100%", objectFit: "cover", pointerEvents: "none" }}
               >
-                <source src="https://stream.mux.com/2jWFc8eFNHfdqHWAV8vPYLKySCwUOJsUXPqQGS6QrcU/medium.mp4" type="video/mp4" />
+                <source src="https://stream.mux.com/2jWFc8eFNHfdqHWAV8vPYLKySCwUOJsUXPqQGS6QrcU/capped-1080p.mp4" type="video/mp4" />
                 Your browser does not support the video tag.
               </video>
 
