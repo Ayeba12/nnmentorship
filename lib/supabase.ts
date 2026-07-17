@@ -4,8 +4,15 @@ import { MockDatabase } from '../domain/MockDatabase';
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder-build-url.supabase.co';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key';
 
-const isOfflineMode = !process.env.NEXT_PUBLIC_SUPABASE_URL || 
-                      process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder-build-url');
+export const isProduction = typeof process !== 'undefined'
+  ? (process.env.NODE_ENV === 'production' || process.env.VERCEL === '1')
+  : (typeof window !== 'undefined' && 
+     !window.location.hostname.includes('localhost') && 
+     !window.location.hostname.includes('127.0.0.1') && 
+     !window.location.hostname.includes('[::1]'));
+
+const isOfflineMode = !isProduction && (!process.env.NEXT_PUBLIC_SUPABASE_URL || 
+                      process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder-build-url'));
 
 const mapMockIdToDbId = (mockId: string): number => {
   const mapping: Record<string, number> = {
@@ -1851,10 +1858,6 @@ const mockSupabase = {
 } as any;
 
 function shouldFailover(err: any): boolean {
-  const isProduction = typeof process !== 'undefined' 
-    ? process.env.NODE_ENV === 'production' || process.env.VERCEL === '1'
-    : (typeof window !== 'undefined' && !window.location.hostname.includes('localhost'));
-  
   if (isProduction) return false;
 
   if (!err) return false;
@@ -1884,6 +1887,7 @@ class SupabaseFailoverProxy {
   constructor(realClient: any, mockClient: any) {
     this.realClient = realClient;
     this.mockClient = mockClient;
+    this.useMock = !isProduction && (isOfflineMode || !realClient);
   }
 
   private wrapPromise(promise: Promise<any>, fallbackFn: () => any) {
@@ -1923,9 +1927,20 @@ class SupabaseFailoverProxy {
     const self = this;
     return new Proxy({}, {
       get(target, prop, receiver) {
+        if (self.useMock) {
+          if (prop === 'auth') return self.mockClient.auth;
+          if (prop === 'storage') return self.mockClient.storage;
+          return self.mockClient[prop];
+        }
+
+        if (!self.realClient) {
+          throw new Error(
+            `Supabase client is not initialized in production. ` +
+            `This usually happens if NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY environment variables are missing or misconfigured in production.`
+          );
+        }
+
         if (prop === 'auth') {
-          if (self.useMock) return self.mockClient.auth;
-          
           return new Proxy(self.realClient.auth, {
             get(authTarget, authProp) {
               const original = authTarget[authProp];
@@ -2122,7 +2137,7 @@ class SupabaseFailoverProxy {
   }
 }
 
-const realSupabase = isOfflineMode ? null : createClient(supabaseUrl, supabaseAnonKey);
+const realSupabase = createClient(supabaseUrl, supabaseAnonKey);
 const supabaseProxy = new SupabaseFailoverProxy(realSupabase, mockSupabase);
 const supabase: SupabaseClient = supabaseProxy.getClient() as any;
 
@@ -2131,7 +2146,7 @@ const serviceRoleKey = typeof process !== 'undefined' &&
                        process.env.SUPABASE_SERVICE_ROLE_KEY.startsWith('ey')
                        ? process.env.SUPABASE_SERVICE_ROLE_KEY 
                        : null;
-const realServiceSupabase = isOfflineMode || !serviceRoleKey ? null : createClient(supabaseUrl, serviceRoleKey!);
+const realServiceSupabase = serviceRoleKey ? createClient(supabaseUrl, serviceRoleKey) : null;
 const serviceSupabaseProxy = new SupabaseFailoverProxy(realServiceSupabase, mockSupabase);
 export const supabaseService: SupabaseClient = serviceSupabaseProxy.getClient() as any;
 

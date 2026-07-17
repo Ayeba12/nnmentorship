@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseService as supabase } from '@/lib/supabase';
+import { supabaseService as supabase, isProduction } from '@/lib/supabase';
 import { requireProfile, logAudit } from '@/lib/api-helpers';
 
 const MOCK_POSTS = [
@@ -73,7 +73,6 @@ export async function GET(req: NextRequest) {
         .single();
 
       if (error || !dbPost) {
-        const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
         if (!isProduction) {
           const mockP = MOCK_POSTS.find(p => p.id === postId);
           if (mockP) return NextResponse.json(mockP);
@@ -136,7 +135,6 @@ export async function GET(req: NextRequest) {
     }
 
     const { data: dbPosts, error: listError } = await query;
-    const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
     if (listError || !dbPosts || dbPosts.length === 0) {
       if (isProduction) {
         return NextResponse.json([]);

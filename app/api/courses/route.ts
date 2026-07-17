@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseService as supabase } from '@/lib/supabase';
+import { supabaseService as supabase, isProduction } from '@/lib/supabase';
 import { requireProfile, logAudit } from '@/lib/api-helpers';
 
 // Beautiful mock data for local fallback and instant visual demo
@@ -205,7 +205,6 @@ export async function GET(req: NextRequest) {
         .single();
 
       if (error || !dbCourse) {
-        const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
         if (!isProduction) {
           const mockC = MOCK_COURSES.find(c => c.id === courseId);
           if (mockC) return NextResponse.json(mockC);
@@ -332,7 +331,6 @@ export async function GET(req: NextRequest) {
     }
 
     const { data: dbCourses, error: listError } = await query;
-    const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
     if (listError || !dbCourses || dbCourses.length === 0) {
       if (isProduction) {
         return NextResponse.json([]);
