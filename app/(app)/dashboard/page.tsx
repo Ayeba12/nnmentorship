@@ -246,108 +246,112 @@ export default function Dashboard() {
       )}
 
       {/* Quick Actions */}
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.1 }}>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
-          {quickActions.map(action => (
-            <Link key={action.href} href={action.href}>
-              <Card hover className="p-3.5 text-center group cursor-pointer">
-                <div className="w-9 h-9 rounded-md bg-navy-50 flex items-center justify-center mx-auto mb-1.5 text-navy-500 group-hover:bg-navy-100 transition-colors">
-                  <action.icon className="w-4 h-4" />
-                </div>
-                <p className="text-xs font-medium text-navy-600">{action.label}</p>
-              </Card>
-            </Link>
-          ))}
-        </div>
-      </motion.div>
+      {profile.role !== 'admin' && (
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.1 }}>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+            {quickActions.map(action => (
+              <Link key={action.href} href={action.href}>
+                <Card hover className="p-3.5 text-center group cursor-pointer">
+                  <div className="w-9 h-9 rounded-md bg-navy-50 flex items-center justify-center mx-auto mb-1.5 text-navy-500 group-hover:bg-navy-100 transition-colors">
+                    <action.icon className="w-4 h-4" />
+                  </div>
+                  <p className="text-xs font-medium text-navy-600">{action.label}</p>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </motion.div>
+      )}
 
       {/* Two-column layout */}
-      <div className="grid lg:grid-cols-2 gap-5">
-        {/* My Connections */}
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.15 }}>
-          <Card className="p-5 h-full">
-            <SectionTitle icon={<Users className="w-4 h-4" />}>
-              {profile.role === 'mentee' ? 'My Mentors' : 'My Mentees'}
-            </SectionTitle>
-            {activeRels.length === 0 ? (
-              <EmptyState icon={<Users className="w-7 h-7" />} title="No active connections" description={profile.role === 'mentee' ? 'Find a mentor to get started' : 'Accept requests to start mentoring'} action={profile.role === 'mentee' ? <Link href="/dashboard/mentors"><Button size="sm" variant="primary"><Search className="w-3.5 h-3.5" /> Find a Mentor</Button></Link> : undefined} />
-            ) : (
-              <div className="space-y-2">
-                {activeRels.map(rel => {
-                  const other = profile.role === 'mentee' ? rel.mentor : rel.mentee;
-                  if (!other) return null;
-                  return (
-                    <Link
-                      key={rel.id}
-                      href="/dashboard/messages"
-                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 hover:bg-navy-50 rounded-xl transition-all duration-200 group border border-navy-50 hover:border-navy-100 hover:shadow-sm bg-white"
+      {profile.role !== 'admin' && (
+        <div className="grid lg:grid-cols-2 gap-5">
+          {/* My Connections */}
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.15 }}>
+            <Card className="p-5 h-full">
+              <SectionTitle icon={<Users className="w-4 h-4" />}>
+                {profile.role === 'mentee' ? 'My Mentors' : 'My Mentees'}
+              </SectionTitle>
+              {activeRels.length === 0 ? (
+                <EmptyState icon={<Users className="w-7 h-7" />} title="No active connections" description={profile.role === 'mentee' ? 'Find a mentor to get started' : 'Accept requests to start mentoring'} action={profile.role === 'mentee' ? <Link href="/dashboard/mentors"><Button size="sm" variant="primary"><Search className="w-3.5 h-3.5" /> Find a Mentor</Button></Link> : undefined} />
+              ) : (
+                <div className="space-y-2">
+                  {activeRels.map(rel => {
+                    const other = profile.role === 'mentee' ? rel.mentor : rel.mentee;
+                    if (!other) return null;
+                    return (
+                      <Link
+                        key={rel.id}
+                        href="/dashboard/messages"
+                        className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 hover:bg-navy-50 rounded-xl transition-all duration-200 group border border-navy-50 hover:border-navy-100 hover:shadow-sm bg-white"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <Avatar name={other.full_name} src={other.avatar_url} size="md" />
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-navy-800 group-hover:text-navy-900 transition-colors truncate">{other.full_name}</p>
+                            <p className="text-xs text-navy-400 truncate mt-0.5">{other.rank} · {other.specialization}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between sm:justify-end gap-2.5 self-stretch sm:self-center shrink-0 border-t sm:border-t-0 border-navy-100/30 pt-2 sm:pt-0 mt-1 sm:mt-0">
+                          <Badge variant={other.role === 'retired_mentor' ? 'gold' : 'success'} className="text-[10px] py-0.5 px-2">
+                            {other.role === 'retired_mentor' ? 'Retired' : 'Active'}
+                          </Badge>
+                          <div className="flex items-center gap-1 text-xs text-navy-400 font-semibold group-hover:text-navy-600 transition-colors">
+                            <span>Chat</span>
+                            <ChevronRight className="w-3.5 h-3.5" />
+                          </div>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </Card>
+          </motion.div>
+
+          {/* Upcoming Sessions */}
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.2 }}>
+            <Card className="p-5 h-full">
+              <SectionTitle icon={<Calendar className="w-4 h-4" />}>
+                Upcoming Sessions
+              </SectionTitle>
+              {upcomingSessions.length === 0 ? (
+                <EmptyState icon={<Calendar className="w-7 h-7" />} title="No upcoming sessions" description="Book a session with your mentor or mentee" action={<Link href="/dashboard/sessions"><Button size="sm" variant="outline">View Sessions</Button></Link>} />
+              ) : (
+                <div className="space-y-2">
+                  {upcomingSessions.map(s => (
+                    <div
+                      key={s.id}
+                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-navy-50/40 rounded-xl border border-navy-100/50 shadow-sm"
                     >
                       <div className="flex items-center gap-3 min-w-0">
-                        <Avatar name={other.full_name} src={other.avatar_url} size="md" />
+                        <div className="w-10 h-10 rounded-lg bg-white border border-navy-100 flex flex-col items-center justify-center shrink-0 shadow-sm">
+                          <span className="text-[9px] font-bold text-navy-400 uppercase tracking-wider leading-none">{new Date(s.scheduled_at).toLocaleDateString('en-GB', { month: 'short' })}</span>
+                          <span className="text-sm font-extrabold text-navy-800 leading-none mt-1">{new Date(s.scheduled_at).getDate()}</span>
+                        </div>
                         <div className="min-w-0">
-                          <p className="text-sm font-semibold text-navy-800 group-hover:text-navy-900 transition-colors truncate">{other.full_name}</p>
-                          <p className="text-xs text-navy-400 truncate mt-0.5">{other.rank} · {other.specialization}</p>
+                          <p className="text-sm font-semibold text-navy-850">{new Date(s.scheduled_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</p>
+                          <p className="text-xs text-navy-400 mt-0.5 truncate">{s.duration_minutes} min · {s.session_type === 'booked_slot' ? 'Booked Slot' : 'Proposed Time'}</p>
                         </div>
                       </div>
                       <div className="flex items-center justify-between sm:justify-end gap-2.5 self-stretch sm:self-center shrink-0 border-t sm:border-t-0 border-navy-100/30 pt-2 sm:pt-0 mt-1 sm:mt-0">
-                        <Badge variant={other.role === 'retired_mentor' ? 'gold' : 'success'} className="text-[10px] py-0.5 px-2">
-                          {other.role === 'retired_mentor' ? 'Retired' : 'Active'}
-                        </Badge>
-                        <div className="flex items-center gap-1 text-xs text-navy-400 font-semibold group-hover:text-navy-600 transition-colors">
-                          <span>Chat</span>
+                        <Badge variant="info" className="text-[10px] py-0.5 px-2">Scheduled</Badge>
+                        <Link href="/dashboard/sessions" className="flex items-center gap-1 text-xs text-navy-500 font-semibold hover:text-navy-700 transition-colors">
+                          <span>Details</span>
                           <ChevronRight className="w-3.5 h-3.5" />
-                        </div>
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
-            )}
-          </Card>
-        </motion.div>
-
-        {/* Upcoming Sessions */}
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.2 }}>
-          <Card className="p-5 h-full">
-            <SectionTitle icon={<Calendar className="w-4 h-4" />}>
-              Upcoming Sessions
-            </SectionTitle>
-            {upcomingSessions.length === 0 ? (
-              <EmptyState icon={<Calendar className="w-7 h-7" />} title="No upcoming sessions" description="Book a session with your mentor or mentee" action={<Link href="/dashboard/sessions"><Button size="sm" variant="outline">View Sessions</Button></Link>} />
-            ) : (
-              <div className="space-y-2">
-                {upcomingSessions.map(s => (
-                  <div
-                    key={s.id}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-navy-50/40 rounded-xl border border-navy-100/50 shadow-sm"
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-10 h-10 rounded-lg bg-white border border-navy-100 flex flex-col items-center justify-center shrink-0 shadow-sm">
-                        <span className="text-[9px] font-bold text-navy-400 uppercase tracking-wider leading-none">{new Date(s.scheduled_at).toLocaleDateString('en-GB', { month: 'short' })}</span>
-                        <span className="text-sm font-extrabold text-navy-800 leading-none mt-1">{new Date(s.scheduled_at).getDate()}</span>
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-semibold text-navy-850">{new Date(s.scheduled_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</p>
-                        <p className="text-xs text-navy-400 mt-0.5 truncate">{s.duration_minutes} min · {s.session_type === 'booked_slot' ? 'Booked Slot' : 'Proposed Time'}</p>
+                        </Link>
                       </div>
                     </div>
-                    <div className="flex items-center justify-between sm:justify-end gap-2.5 self-stretch sm:self-center shrink-0 border-t sm:border-t-0 border-navy-100/30 pt-2 sm:pt-0 mt-1 sm:mt-0">
-                      <Badge variant="info" className="text-[10px] py-0.5 px-2">Scheduled</Badge>
-                      <Link href="/dashboard/sessions" className="flex items-center gap-1 text-xs text-navy-500 font-semibold hover:text-navy-700 transition-colors">
-                        <span>Details</span>
-                        <ChevronRight className="w-3.5 h-3.5" />
-                      </Link>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </Card>
-        </motion.div>
-      </div>
+                  ))}
+                </div>
+              )}
+            </Card>
+          </motion.div>
+        </div>
+      )}
 
       {/* Goals Progress */}
-      {activeGoals.length > 0 && (
+      {profile.role !== 'admin' && activeGoals.length > 0 && (
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.25 }}>
           <Card className="p-5">
             <SectionTitle icon={<Target className="w-4 h-4" />} action={<Link href="/dashboard/goals"><Button size="sm" variant="ghost">View all <ChevronRight className="w-3 h-3" /></Button></Link>}>

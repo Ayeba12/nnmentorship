@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import supabase from '@/lib/supabase';
+import supabase, { supabaseService } from '@/lib/supabase';
 import { requireRole, logAudit } from '@/lib/api-helpers';
 
 export async function GET(req: NextRequest) {
@@ -12,12 +12,12 @@ export async function GET(req: NextRequest) {
 
     if (action === 'stats') {
       const [users, relationships, pending, sessions, mentors, mentees] = await Promise.all([
-        supabase.from('profiles').select('*', { count: 'exact', head: true }),
-        supabase.from('mentorship_relationships').select('*', { count: 'exact', head: true }).eq('status', 'active'),
-        supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('verification_status', 'pending'),
-        supabase.from('sessions').select('*', { count: 'exact', head: true }).gte('scheduled_at', new Date(new Date().setDate(1)).toISOString()),
-        supabase.from('profiles').select('*', { count: 'exact', head: true }).in('role', ['active_mentor', 'retired_mentor']).eq('verification_status', 'verified'),
-        supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'mentee').eq('verification_status', 'verified'),
+        supabaseService.from('profiles').select('*', { count: 'exact', head: true }),
+        supabaseService.from('mentorship_relationships').select('*', { count: 'exact', head: true }).eq('status', 'active'),
+        supabaseService.from('profiles').select('*', { count: 'exact', head: true }).eq('verification_status', 'pending'),
+        supabaseService.from('sessions').select('*', { count: 'exact', head: true }).gte('scheduled_at', new Date(new Date().setDate(1)).toISOString()),
+        supabaseService.from('profiles').select('*', { count: 'exact', head: true }).in('role', ['active_mentor', 'retired_mentor']).eq('verification_status', 'verified'),
+        supabaseService.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'mentee').eq('verification_status', 'verified'),
       ]);
 
       return NextResponse.json({
@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
     }
 
     if (action === 'pending') {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseService
         .from('profiles')
         .select('*')
         .eq('verification_status', 'pending')
@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
     }
 
     if (action === 'audit') {
-      const { data: logs, error } = await supabase
+      const { data: logs, error } = await supabaseService
         .from('audit_logs')
         .select('*')
         .order('created_at', { ascending: false })
@@ -54,7 +54,7 @@ export async function GET(req: NextRequest) {
 
       let profiles: any[] = [];
       if (actorIds.length > 0) {
-        const { data: profs, error: profsError } = await supabase
+        const { data: profs, error: profsError } = await supabaseService
           .from('profiles')
           .select('id, full_name, role')
           .in('id', actorIds);
@@ -73,10 +73,10 @@ export async function GET(req: NextRequest) {
 
     if (action === 'reports') {
       const [allRelRaw, allSessions, allGoals, allRequests] = await Promise.all([
-        supabase.from('mentorship_relationships').select('*'),
-        supabase.from('sessions').select('*'),
-        supabase.from('goals').select('*'),
-        supabase.from('mentorship_requests').select('*'),
+        supabaseService.from('mentorship_relationships').select('*'),
+        supabaseService.from('sessions').select('*'),
+        supabaseService.from('goals').select('*'),
+        supabaseService.from('mentorship_requests').select('*'),
       ]);
 
       if (allRelRaw.error) throw allRelRaw.error;
@@ -88,7 +88,7 @@ export async function GET(req: NextRequest) {
 
       let profiles: any[] = [];
       if (profileIds.length > 0) {
-        const { data: profs, error: profsError } = await supabase
+        const { data: profs, error: profsError } = await supabaseService
           .from('profiles')
           .select('id, full_name')
           .in('id', profileIds);
@@ -130,7 +130,7 @@ export async function GET(req: NextRequest) {
     }
 
     if (action === 'all_users') {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseService
         .from('profiles')
         .select('*')
         .order('created_at', { ascending: false });
@@ -156,7 +156,7 @@ export async function PUT(req: NextRequest) {
     if (action === 'verify') {
       const body = await req.json();
       const { id, verification_status } = body;
-      const { data, error } = await supabase
+      const { data, error } = await supabaseService
         .from('profiles')
         .update({ verification_status })
         .eq('id', id)
