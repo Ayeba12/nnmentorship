@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireProfile } from '@/lib/api-helpers';
-import supabase from '@/lib/supabase';
+import { supabaseService as supabase } from '@/lib/supabase';
 import path from 'path';
 
 let bucketChecked = false;

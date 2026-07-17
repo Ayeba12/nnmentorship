@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import supabase from '@/lib/supabase';
+import { supabaseService as supabase } from '@/lib/supabase';
 import { requireProfile, logAudit } from '@/lib/api-helpers';
 
 // Beautiful mock data for local fallback and instant visual demo
