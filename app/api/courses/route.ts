@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseService as supabase, isProduction } from '@/lib/supabase';
 import { requireProfile, logAudit } from '@/lib/api-helpers';
 
+export const dynamic = 'force-dynamic';
+
 // Beautiful mock data for local fallback and instant visual demo
 const MOCK_COURSES = [
   {

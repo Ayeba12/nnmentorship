@@ -3,6 +3,8 @@ import supabase, { supabaseService } from '@/lib/supabase';
 import { requireProfile, logAudit } from '@/lib/api-helpers';
 import { mailer } from '@/lib/mail';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
   try {
     const profile = await requireProfile(req);

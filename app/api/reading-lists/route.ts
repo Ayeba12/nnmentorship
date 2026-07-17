@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseService as supabase, isProduction } from '@/lib/supabase';
 import { requireProfile, logAudit } from '@/lib/api-helpers';
 
+export const dynamic = 'force-dynamic';
+
 const MOCK_READING_LISTS = [
   {
     id: 801,
