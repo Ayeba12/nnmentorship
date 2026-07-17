@@ -117,13 +117,15 @@ export async function POST(req: NextRequest) {
         .filter(Boolean);
 
       if (recipientEmails.length > 0) {
-        await mailer.sendEventPublishedEmail(
+        mailer.sendEventPublishedEmail(
           recipientEmails,
           title,
           description || '',
           scheduled_at,
           meeting_link || undefined
-        );
+        ).catch(mailErr => {
+          console.error('Failed to broadcast new event email in background:', mailErr);
+        });
       }
     } catch (mailErr) {
       console.error('Failed to broadcast new event email:', mailErr);
