@@ -82,9 +82,9 @@ export default function DashboardEventsPage() {
       setShowCreate(false);
       resetForm();
       await refreshEvents();
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Failed to create event.");
+      alert(`Failed to create event: ${err.message || err}`);
     } finally {
       setSaving(false);
     }
@@ -114,9 +114,9 @@ export default function DashboardEventsPage() {
       setSelectedEvent(null);
       resetForm();
       await refreshEvents();
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Failed to update event.");
+      alert(`Failed to update event: ${err.message || err}`);
     } finally {
       setSaving(false);
     }
@@ -128,9 +128,9 @@ export default function DashboardEventsPage() {
     try {
       await api.events.delete(eventId);
       await refreshEvents();
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Failed to delete event.");
+      alert(`Failed to delete event: ${err.message || err}`);
     }
   };
 
