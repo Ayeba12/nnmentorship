@@ -69,8 +69,11 @@ export async function GET(req: NextRequest) {
         .single();
 
       if (error || !dbItem) {
-        const mockItem = MOCK_LIBRARY.find(item => item.id === itemId);
-        if (mockItem) return NextResponse.json(mockItem);
+        const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
+        if (!isProduction) {
+          const mockItem = MOCK_LIBRARY.find(item => item.id === itemId);
+          if (mockItem) return NextResponse.json(mockItem);
+        }
         return NextResponse.json({ error: 'Library item not found' }, { status: 404 });
       }
 
@@ -94,7 +97,11 @@ export async function GET(req: NextRequest) {
     }
 
     const { data: dbItems, error: listError } = await query;
+    const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
     if (listError || !dbItems || dbItems.length === 0) {
+      if (isProduction) {
+        return NextResponse.json([]);
+      }
       // Fallback to mock
       let filteredMock = MOCK_LIBRARY;
       if (category) {

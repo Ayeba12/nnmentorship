@@ -205,9 +205,11 @@ export async function GET(req: NextRequest) {
         .single();
 
       if (error || !dbCourse) {
-        // Fallback to mock course
-        const mockC = MOCK_COURSES.find(c => c.id === courseId);
-        if (mockC) return NextResponse.json(mockC);
+        const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
+        if (!isProduction) {
+          const mockC = MOCK_COURSES.find(c => c.id === courseId);
+          if (mockC) return NextResponse.json(mockC);
+        }
         return NextResponse.json({ error: 'Course not found' }, { status: 404 });
       }
 
@@ -330,7 +332,11 @@ export async function GET(req: NextRequest) {
     }
 
     const { data: dbCourses, error: listError } = await query;
+    const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
     if (listError || !dbCourses || dbCourses.length === 0) {
+      if (isProduction) {
+        return NextResponse.json([]);
+      }
       // Fallback to mock courses
       let filteredMock = [...MOCK_COURSES];
       if (category) {

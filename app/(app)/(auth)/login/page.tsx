@@ -34,7 +34,8 @@ function LoginContent() {
       const { data, error } = await supabase.auth.signInWithPassword({ email: lowerEmail, password });
       
       if (error) {
-        if (isMockFormat && isDemoPassword) {
+        const isProduction = typeof window !== 'undefined' && !window.location.hostname.includes('localhost');
+        if (!isProduction && isMockFormat && isDemoPassword) {
           localStorage.setItem('mock_session', JSON.stringify({
             access_token: `mock-token-${lowerEmail}`,
             user: { email: lowerEmail, id: `mock-uuid-${lowerEmail}` }
@@ -49,11 +50,14 @@ function LoginContent() {
         if (data.session.access_token?.startsWith('mock-token-')) {
           localStorage.setItem('mock_session', JSON.stringify(data.session));
         }
-      } else if (isMockFormat && isDemoPassword) {
-        localStorage.setItem('mock_session', JSON.stringify({
-          access_token: `mock-token-${lowerEmail}`,
-          user: { email: lowerEmail, id: `mock-uuid-${lowerEmail}` }
-        }));
+      } else {
+        const isProduction = typeof window !== 'undefined' && !window.location.hostname.includes('localhost');
+        if (!isProduction && isMockFormat && isDemoPassword) {
+          localStorage.setItem('mock_session', JSON.stringify({
+            access_token: `mock-token-${lowerEmail}`,
+            user: { email: lowerEmail, id: `mock-uuid-${lowerEmail}` }
+          }));
+        }
       }
 
       window.location.href = redirect || '/dashboard';

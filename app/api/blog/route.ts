@@ -73,9 +73,11 @@ export async function GET(req: NextRequest) {
         .single();
 
       if (error || !dbPost) {
-        // Fallback to mock post
-        const mockP = MOCK_POSTS.find(p => p.id === postId);
-        if (mockP) return NextResponse.json(mockP);
+        const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
+        if (!isProduction) {
+          const mockP = MOCK_POSTS.find(p => p.id === postId);
+          if (mockP) return NextResponse.json(mockP);
+        }
         return NextResponse.json({ error: 'Post not found' }, { status: 404 });
       }
 
@@ -134,7 +136,11 @@ export async function GET(req: NextRequest) {
     }
 
     const { data: dbPosts, error: listError } = await query;
+    const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
     if (listError || !dbPosts || dbPosts.length === 0) {
+      if (isProduction) {
+        return NextResponse.json([]);
+      }
       // Fallback to mock posts
       let filteredMock = MOCK_POSTS;
       if (category) {

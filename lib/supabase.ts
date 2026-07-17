@@ -1851,6 +1851,12 @@ const mockSupabase = {
 } as any;
 
 function shouldFailover(err: any): boolean {
+  const isProduction = typeof process !== 'undefined' 
+    ? process.env.NODE_ENV === 'production' || process.env.VERCEL === '1'
+    : (typeof window !== 'undefined' && !window.location.hostname.includes('localhost'));
+  
+  if (isProduction) return false;
+
   if (!err) return false;
   const msg = (err.message || '').toLowerCase();
   return msg.includes('timeout') || 

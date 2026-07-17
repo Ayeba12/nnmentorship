@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import supabase from '@/lib/supabase';
+import { supabaseService as supabase } from '@/lib/supabase';
 import { requireProfile, logAudit } from '@/lib/api-helpers';
 
 const MOCK_READING_LISTS = [
@@ -42,8 +42,11 @@ export async function GET(req: NextRequest) {
         .single();
       
       if (error || !dbList) {
-        const mockList = MOCK_READING_LISTS.find(l => l.id === Number(id));
-        if (mockList) return NextResponse.json(mockList);
+        const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
+        if (!isProduction) {
+          const mockList = MOCK_READING_LISTS.find(l => l.id === Number(id));
+          if (mockList) return NextResponse.json(mockList);
+        }
         return NextResponse.json({ error: 'Reading list not found' }, { status: 404 });
       }
 
@@ -65,7 +68,11 @@ export async function GET(req: NextRequest) {
       .from('reading_lists')
       .select('*');
 
+    const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
     if (listError || !dbLists || dbLists.length === 0) {
+      if (isProduction) {
+        return NextResponse.json([]);
+      }
       return NextResponse.json(MOCK_READING_LISTS);
     }
 
