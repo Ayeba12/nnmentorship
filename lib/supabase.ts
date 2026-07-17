@@ -2120,7 +2120,11 @@ const realSupabase = isOfflineMode ? null : createClient(supabaseUrl, supabaseAn
 const supabaseProxy = new SupabaseFailoverProxy(realSupabase, mockSupabase);
 const supabase: SupabaseClient = supabaseProxy.getClient() as any;
 
-const serviceRoleKey = typeof process !== 'undefined' ? process.env.SUPABASE_SERVICE_ROLE_KEY : null;
+const serviceRoleKey = typeof process !== 'undefined' && 
+                       process.env.SUPABASE_SERVICE_ROLE_KEY && 
+                       process.env.SUPABASE_SERVICE_ROLE_KEY.startsWith('ey')
+                       ? process.env.SUPABASE_SERVICE_ROLE_KEY 
+                       : null;
 const realServiceSupabase = isOfflineMode || !serviceRoleKey ? null : createClient(supabaseUrl, serviceRoleKey!);
 const serviceSupabaseProxy = new SupabaseFailoverProxy(realServiceSupabase, mockSupabase);
 export const supabaseService: SupabaseClient = serviceSupabaseProxy.getClient() as any;
