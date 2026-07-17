@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import supabase from './supabase';
+import supabase, { supabaseService } from './supabase';
 import type { Profile, UserRole } from './types';
 import { MockDatabase } from '../domain/MockDatabase';
 
@@ -105,7 +105,7 @@ export async function getProfile(req: NextRequest): Promise<Profile | null> {
 
   // Try real database first
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseService
       .from('profiles')
       .select('*')
       .eq('email', finalEmail)
@@ -247,7 +247,7 @@ export async function requireRole(req: NextRequest, roles: string[]): Promise<Pr
 
 export async function logAudit(actorId: number, action: string, targetType: string, targetId: string | null, details: string | null) {
   try {
-    await supabase.from('audit_logs').insert({
+    await supabaseService.from('audit_logs').insert({
       actor_id: actorId,
       action,
       target_type: targetType,

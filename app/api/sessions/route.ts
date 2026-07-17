@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import supabase from '@/lib/supabase';
+import supabase, { supabaseService } from '@/lib/supabase';
 import { requireProfile, logAudit } from '@/lib/api-helpers';
 
 export async function GET(req: NextRequest) {
@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
     if (!profile) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     // 1. Fetch relationships for this user
-    const { data: rels, error: relsError } = await supabase
+    const { data: rels, error: relsError } = await supabaseService
       .from('mentorship_relationships')
       .select('*')
       .or(`mentee_id.eq.${profile.id},mentor_id.eq.${profile.id}`);
@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
     }
 
     // 2. Fetch sessions for these relationships
-    const { data: sessions, error: sessError } = await supabase
+    const { data: sessions, error: sessError } = await supabaseService
       .from('sessions')
       .select('*')
       .in('relationship_id', relIds)
@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
 
     let profiles: any[] = [];
     if (profileIds.length > 0) {
-      const { data: profs, error: profsError } = await supabase
+      const { data: profs, error: profsError } = await supabaseService
         .from('profiles')
         .select('id, full_name, rank, avatar_url')
         .in('id', profileIds);
@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
     const { relationship_id, scheduled_at, duration_minutes, session_type, agenda } = body;
 
     // Check relationship
-    const { data: rel, error: relError } = await supabase
+    const { data: rel, error: relError } = await supabaseService
       .from('mentorship_relationships')
       .select('*')
       .eq('id', relationship_id)
@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
     // Determine status
     const status = session_type === 'proposed_time' ? 'pending_confirmation' : 'scheduled';
 
-    const { data: session, error: sessError } = await supabase
+    const { data: session, error: sessError } = await supabaseService
       .from('sessions')
       .insert({
         relationship_id,
@@ -122,7 +122,7 @@ export async function PUT(req: NextRequest) {
     const { id, status, notes, goals_set, progress_recorded } = body;
 
     // Fetch existing session
-    const { data: existing, error: fetchError } = await supabase
+    const { data: existing, error: fetchError } = await supabaseService
       .from('sessions')
       .select('*')
       .eq('id', id)
@@ -132,7 +132,7 @@ export async function PUT(req: NextRequest) {
     }
 
     // Fetch existing relationship
-    const { data: rel, error: relError } = await supabase
+    const { data: rel, error: relError } = await supabaseService
       .from('mentorship_relationships')
       .select('*')
       .eq('id', existing.relationship_id)
@@ -169,7 +169,7 @@ export async function PUT(req: NextRequest) {
       }
     }
 
-    const { data: updated, error: updateError } = await supabase
+    const { data: updated, error: updateError } = await supabaseService
       .from('sessions')
       .update(updateData)
       .eq('id', id)

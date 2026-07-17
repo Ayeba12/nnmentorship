@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import supabase from '@/lib/supabase';
+import supabase, { supabaseService } from '@/lib/supabase';
 import { requireProfile, logAudit } from '@/lib/api-helpers';
 import { mailer } from '@/lib/mail';
 
@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
 
-    let query = supabase.from('events').select('*');
+    let query = supabaseService.from('events').select('*');
     if (id) {
       query = query.eq('id', Number(id));
     }
@@ -33,8 +33,8 @@ export async function GET(req: NextRequest) {
     }
 
     // Load registrations and profiles
-    const { data: registrations } = await supabase.from('event_registrations').select('*');
-    const { data: profiles } = await supabase.from('profiles').select('id, full_name, email, role, rank, avatar_url');
+    const { data: registrations } = await supabaseService.from('event_registrations').select('*');
+    const { data: profiles } = await supabaseService.from('profiles').select('id, full_name, email, role, rank, avatar_url');
 
     const mappedEvents = filteredEvents.map(event => {
       const eventRegs = (registrations || [])
@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const { data, error } = await supabase.from('events').insert({
+    const { data, error } = await supabaseService.from('events').insert({
       title,
       description,
       event_type,
@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
 
     // Trigger Broadside Notification Email to all platform users
     try {
-      const { data: users } = await supabase
+      const { data: users } = await supabaseService
         .from('profiles')
         .select('email')
         .not('email', 'is', null);
@@ -149,7 +149,7 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: 'Missing event ID' }, { status: 400 });
     }
 
-    const { data, error } = await supabase.from('events').update({
+    const { data, error } = await supabaseService.from('events').update({
       ...updates
     }).eq('id', id).select().single();
 
@@ -190,7 +190,7 @@ export async function DELETE(req: NextRequest) {
 }
 
 async function executeDelete(id: number, actorId: number) {
-  const { error } = await supabase.from('events').delete().eq('id', id);
+  const { error } = await supabaseService.from('events').delete().eq('id', id);
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
