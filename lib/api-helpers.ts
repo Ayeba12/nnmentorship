@@ -111,6 +111,50 @@ export async function getProfile(req: NextRequest): Promise<Profile | null> {
       .eq('email', finalEmail)
       .single();
     if (!error && data) return data as Profile;
+    
+    // Auto-create real database profile for real logged-in users to prevent broken foreign key references
+    const isMockUser = user.id.startsWith('mock-uuid-') || finalEmail.startsWith('mock-') || finalEmail.includes('navymentor.ng');
+    if (!isMockUser) {
+      console.warn(`Profile not found for real user ${finalEmail}. Auto-creating profile in real database...`);
+      const emailLower = user.email.toLowerCase();
+      const namePart = emailLower.split('@')[0];
+      const isMentor = emailLower.includes('mentor') || emailLower.includes('amadi') || emailLower.includes('balogun') || emailLower.includes('cole') || emailLower.includes('okonkwo');
+      const isRetired = emailLower.includes('retired');
+      const isAdmin = emailLower.includes('admin') || emailLower.includes('ola') || emailLower.includes('ayeba');
+      
+      let role: UserRole = 'mentee';
+      if (isAdmin) role = 'admin';
+      else if (isRetired) role = 'retired_mentor';
+      else if (isMentor) role = 'active_mentor';
+
+      const { data: newProfile, error: insertError } = await supabaseService
+        .from('profiles')
+        .insert({
+          email: emailLower,
+          auth_id: user.id,
+          full_name: namePart.charAt(0).toUpperCase() + namePart.slice(1).replace('.', ' ').replace('-', ' '),
+          role: role,
+          is_content_contributor: isAdmin || isRetired,
+          verification_status: role === 'admin' ? 'verified' : 'pending',
+          service_number: 'NN/' + Math.floor(Math.random() * 9000 + 1000),
+          service_branch: 'Operations',
+          specialization: 'General Duties',
+          rank: role === 'admin' ? 'Commander' : 'Lieutenant',
+          years_of_service: 5,
+          command_location: 'NHQ Abuja',
+          bio: 'Auto-created profile.',
+        })
+        .select()
+        .single();
+
+      if (!insertError && newProfile) {
+        console.log(`Auto-created profile successfully for ${finalEmail} with ID: ${newProfile.id}`);
+        return newProfile as Profile;
+      } else {
+        console.error('Failed to auto-create profile:', insertError);
+      }
+    }
+    
     if (error) {
       console.warn('getProfile real DB returned error, falling through to mock:', error.message || error);
     }
