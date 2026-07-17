@@ -441,6 +441,9 @@ export async function POST(req: NextRequest) {
             video_url: les.video_url || null,
             duration_minutes: les.duration_minutes || 10,
             order_index: i + 1,
+            section_title: les.section_title || 'General',
+            lesson_type: les.lesson_type || 'text',
+            resources: les.resources || null
           })
           .select()
           .single();
@@ -455,6 +458,8 @@ export async function POST(req: NextRequest) {
                 lesson_id: dbLesson.id,
                 title: q.title,
                 passing_score: q.passing_score || 70,
+                time_limit_minutes: q.time_limit_minutes || null,
+                max_retakes: q.max_retakes || null,
               })
               .select()
               .single();
@@ -468,8 +473,10 @@ export async function POST(req: NextRequest) {
                   .insert({
                     quiz_id: dbQuiz.id,
                     question: ques.question,
-                    options: ques.options,
-                    correct_index: ques.correct_index,
+                    type: ques.type || 'multiple_choice',
+                    options: ques.options || null,
+                    correct_index: ques.correct_index !== undefined ? ques.correct_index : null,
+                    correct_short_answer: ques.correct_short_answer || null,
                   });
               }
             }
