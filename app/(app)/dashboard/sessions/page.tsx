@@ -454,7 +454,9 @@ export default function Sessions() {
               </div>
             )}
 
-            <div className="flex justify-between">
+            {error && <div className="p-3 bg-red-50 border border-red-200/60 rounded-lg text-sm text-red-700 mt-3">{error}</div>}
+
+            <div className="flex justify-between mt-4">
               <Button variant="ghost" size="sm" onClick={() => setBookStep('select')}><ChevronLeft className="w-4 h-4" /> Back</Button>
             </div>
           </div>

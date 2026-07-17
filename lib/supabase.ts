@@ -687,11 +687,17 @@ class MockSupabaseQueryBuilder {
             sessions.push({
               id: `session-${generatedId}`,
               pairId: pair.id,
-              title: r.title,
+              title: r.title || (r.session_type === 'proposed_time' ? 'Proposed Mentorship Session' : 'Scheduled Mentorship Session'),
               dateTime: r.scheduled_at,
-              status: 'SCHEDULED',
-              goalsAddressed: []
-            });
+              status: (r.status || 'scheduled').toUpperCase(),
+              goalsAddressed: [],
+              notes: r.notes || null,
+              goals_set: r.goals_set || null,
+              progress_recorded: r.progress_recorded || null,
+              duration_minutes: r.duration_minutes || 60,
+              session_type: r.session_type || 'booked_slot',
+              completed_at: r.completed_at || null,
+            } as any);
           }
         });
         MockDatabase.saveSessions(sessions);
@@ -1323,6 +1329,33 @@ class MockSupabaseQueryBuilder {
             saveMockTable('assignment_submissions', current);
             data = [current[index]];
           }
+        } else if (this.table === 'sessions') {
+          const sessions = MockDatabase.getSessions();
+          const sessionToUpdate = sessions.find(s => (parseInt(String(s.id).replace(/\D/g, '')) || 0) === Number(dbId));
+          if (sessionToUpdate) {
+            if (this.updateData.status) {
+              sessionToUpdate.status = this.updateData.status.toUpperCase() as any;
+            }
+            if (this.updateData.notes !== undefined) (sessionToUpdate as any).notes = this.updateData.notes;
+            if (this.updateData.goals_set !== undefined) (sessionToUpdate as any).goals_set = this.updateData.goals_set;
+            if (this.updateData.progress_recorded !== undefined) (sessionToUpdate as any).progress_recorded = this.updateData.progress_recorded;
+            if (this.updateData.completed_at !== undefined) (sessionToUpdate as any).completed_at = this.updateData.completed_at;
+            
+            MockDatabase.saveSessions(sessions);
+            data = [{
+              id: parseInt(String(sessionToUpdate.id).replace(/\D/g, '')) || 1,
+              relationship_id: parseInt(String(sessionToUpdate.pairId).replace(/\D/g, '')) || 1,
+              title: sessionToUpdate.title,
+              scheduled_at: sessionToUpdate.dateTime,
+              duration_minutes: (sessionToUpdate as any).duration_minutes || 60,
+              status: sessionToUpdate.status.toLowerCase(),
+              session_type: (sessionToUpdate as any).session_type || 'booked_slot',
+              notes: (sessionToUpdate as any).notes || null,
+              goals_set: (sessionToUpdate as any).goals_set || null,
+              progress_recorded: (sessionToUpdate as any).progress_recorded || null,
+              completed_at: (sessionToUpdate as any).completed_at || null,
+            }];
+          }
         }
       }
 
@@ -1385,14 +1418,18 @@ class MockSupabaseQueryBuilder {
       }));
     } else if (this.table === 'sessions') {
       data = MockDatabase.getSessions().map(s => ({
-        id: parseInt(s.id.replace(/\D/g, '')) || 1,
-        relationship_id: parseInt(s.pairId.replace(/\D/g, '')) || 1,
-        title: s.title,
+        id: parseInt(String(s.id).replace(/\D/g, '')) || 1,
+        relationship_id: parseInt(String(s.pairId).replace(/\D/g, '')) || 1,
+        title: s.title || ((s as any).session_type === 'proposed_time' ? 'Proposed Mentorship Session' : 'Scheduled Mentorship Session'),
         scheduled_at: s.dateTime,
-        duration_minutes: 60,
+        duration_minutes: (s as any).duration_minutes || 60,
         status: s.status.toLowerCase(),
-        session_type: 'booked_slot',
-        created_at: new Date().toISOString()
+        session_type: (s as any).session_type || 'booked_slot',
+        notes: (s as any).notes || null,
+        goals_set: (s as any).goals_set || null,
+        progress_recorded: (s as any).progress_recorded || null,
+        created_at: new Date().toISOString(),
+        completed_at: (s as any).completed_at || null,
       }));
     } else if (this.table === 'goals') {
       const pairs = MockDatabase.getPairs();
