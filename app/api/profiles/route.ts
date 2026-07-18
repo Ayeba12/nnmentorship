@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import supabase from '@/lib/supabase';
+import { supabaseService as supabase } from '@/lib/supabase';
 import { requireAuth, requireProfile, requireRole, logAudit, getProfile } from '@/lib/api-helpers';
 import { mailer } from '@/lib/mail';
 
