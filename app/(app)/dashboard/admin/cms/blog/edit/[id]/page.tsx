@@ -113,18 +113,25 @@ export default function EditBlogPost() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 py-6 px-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="sm" onClick={() => router.push('/dashboard/admin?tab=cms')}>
-            <ArrowLeft className="w-4 h-4 mr-1" /> Back
-          </Button>
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-navy-800 tracking-tight">Edit Blog Post</h1>
-            <p className="text-sm text-navy-400">Update your article content and publication configurations</p>
-          </div>
+      {/* Back button */}
+      <div>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => router.push('/dashboard/admin?tab=cms')}
+          className="flex items-center gap-1.5 text-navy-500 hover:text-navy-800 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" /> Back to CMS Manager
+        </Button>
+      </div>
+
+      {/* Header Info & Actions */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-navy-100 pb-4">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold text-navy-800 tracking-tight">Edit Blog Post</h1>
+          <p className="text-sm text-navy-400">Update your article content and publication configurations</p>
         </div>
-        <Button onClick={handleSave} disabled={loading} className="shadow-soft">
+        <Button onClick={handleSave} disabled={loading} className="shadow-soft w-full sm:w-auto">
           <Save className="w-4 h-4 mr-1.5" /> {loading ? 'Saving...' : 'Save Changes'}
         </Button>
       </div>

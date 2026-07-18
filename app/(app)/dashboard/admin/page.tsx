@@ -88,11 +88,30 @@ export default function AdminDashboard() {
   const [isSavingLibrary, setIsSavingLibrary] = useState(false);
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab');
+      if (tabParam && ['overview', 'verifications', 'relationships', 'reports', 'announcements', 'cms', 'audit', 'users'].includes(tabParam)) {
+        setTab(tabParam as Tab);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
     setAuditPage(1);
     setUsersPage(1);
     setAnnPage(1);
     setAnnSuccess('');
     setAnnError('');
+
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('tab') !== tab) {
+        params.set('tab', tab);
+        const newUrl = `${window.location.pathname}?${params.toString()}`;
+        window.history.replaceState({ ...window.history.state, as: newUrl, url: newUrl }, '', newUrl);
+      }
+    }
   }, [tab]);
 
   const load = async () => {
