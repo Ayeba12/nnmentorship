@@ -114,7 +114,45 @@ export async function getProfile(req: NextRequest): Promise<Profile | null> {
     
     // Auto-create real database profile for real logged-in users to prevent broken foreign key references
     const isMockUser = user.id.startsWith('mock-uuid-') || finalEmail.startsWith('mock-') || finalEmail.includes('navymentor.ng');
-    if (!isMockUser) {
+    if (isMockUser) {
+      MockDatabase.initialize();
+      const mockUsers = MockDatabase.getUsers();
+      const mockUser = mockUsers.find(u => u.email.toLowerCase() === finalEmail);
+      if (mockUser) {
+        console.log(`Mock user detected: ${finalEmail}. Auto-creating profile in database to prevent foreign key errors...`);
+        let role: UserRole = 'mentee';
+        if (mockUser.role === 'ADMIN') role = 'admin';
+        else if (mockUser.role === 'MENTOR_RETIRED') role = 'retired_mentor';
+        else if (mockUser.role === 'MENTOR_ACTIVE') role = 'active_mentor';
+
+        const { data: newProfile, error: insertError } = await supabaseService
+          .from('profiles')
+          .insert({
+            id: mapMockIdToDbId(mockUser.id),
+            email: mockUser.email,
+            full_name: mockUser.fullName,
+            role: role,
+            is_content_contributor: mockUser.isContentContributor,
+            verification_status: 'verified',
+            service_number: mockUser.navyId || 'NN/' + Math.floor(Math.random() * 9000 + 1000),
+            service_branch: 'Operations',
+            specialization: mockUser.specialization || 'General Duties',
+            rank: mockUser.rank || (role === 'admin' ? 'Commander' : 'Lieutenant'),
+            years_of_service: mockUser.yearsServed || 5,
+            command_location: mockUser.command || 'NHQ Abuja',
+            bio: mockUser.bio || 'Auto-created mock profile.',
+          })
+          .select()
+          .single();
+
+        if (!insertError && newProfile) {
+          console.log(`Auto-created mock profile successfully for ${finalEmail} with ID: ${newProfile.id}`);
+          return newProfile as Profile;
+        } else {
+          console.error('Failed to auto-create mock profile:', insertError);
+        }
+      }
+    } else {
       console.warn(`Profile not found for real user ${finalEmail}. Auto-creating profile in real database...`);
       const emailLower = user.email.toLowerCase();
       const namePart = emailLower.split('@')[0];
