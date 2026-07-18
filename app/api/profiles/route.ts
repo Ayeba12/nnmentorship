@@ -13,11 +13,23 @@ export async function GET(req: NextRequest) {
     const specialization = searchParams.get('specialization');
     const branch = searchParams.get('branch');
     const q = searchParams.get('q');
+    const directory = searchParams.get('directory');
 
     if (me === 'true') {
       const profile = await requireProfile(req);
       if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
       return NextResponse.json(profile);
+    }
+
+    if (directory === 'true') {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .neq('role', 'admin')
+        .eq('verification_status', 'verified')
+        .order('full_name', { ascending: true });
+      if (error) throw error;
+      return NextResponse.json(data);
     }
 
     if (id) {

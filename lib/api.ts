@@ -49,6 +49,7 @@ export const api = {
   profiles: {
     me: () => apiFetch<Profile>('/api/profiles?me=true'),
     get: (id: number) => apiFetch<Profile>(`/api/profiles?id=${id}`),
+    directory: () => apiFetch<Profile[]>('/api/profiles?directory=true'),
     mentors: (params: Record<string, string> = {}) => {
       const qs = new URLSearchParams({ mentors: 'true', ...params }).toString();
       return apiFetch<Profile[]>(`/api/profiles?${qs}`);

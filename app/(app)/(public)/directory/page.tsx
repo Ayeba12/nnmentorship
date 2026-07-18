@@ -3,7 +3,23 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/components/AuthContext";
-import { MockDatabase, type User } from "@/domain/MockDatabase";
+import { api } from "@/lib/api";
+import { Spinner } from "@/components/ui";
+
+type User = {
+  id: string;
+  fullName: string;
+  email: string;
+  role: "MENTOR_ACTIVE" | "MENTOR_RETIRED" | "MENTEE" | "ADMIN";
+  status: "APPROVED" | "PENDING" | "REJECTED";
+  serviceNumber: string;
+  serviceBranch: string;
+  specialization: string;
+  rank: string;
+  yearsOfService: number;
+  command: string;
+  avatarUrl: string | null;
+};
 import { Search, Users, Grid, List, Anchor, ArrowRight, SlidersHorizontal, UserPlus } from "lucide-react";
 
 export default function DirectoryPage() {
@@ -15,14 +31,37 @@ export default function DirectoryPage() {
   const [viewMode, setViewMode] = useState<"GRID" | "LIST">("GRID");
   const [showFilters, setShowFilters] = useState(false);
 
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    try {
-      MockDatabase.initialize();
-      const allUsers = MockDatabase.getUsers();
-      setUsers(allUsers);
-    } catch (e) {
-      console.error(e);
-    }
+    setLoading(true);
+    api.profiles.directory()
+      .then((data) => {
+        const mappedUsers = (data || []).map((p) => {
+          let mappedRole: "MENTOR_ACTIVE" | "MENTOR_RETIRED" | "MENTEE" | "ADMIN" = "MENTEE";
+          if (p.role === "active_mentor") mappedRole = "MENTOR_ACTIVE";
+          else if (p.role === "retired_mentor") mappedRole = "MENTOR_RETIRED";
+          else if (p.role === "admin") mappedRole = "ADMIN";
+
+          return {
+            id: String(p.id),
+            fullName: p.full_name,
+            email: p.email,
+            role: mappedRole,
+            status: p.verification_status === "verified" ? "APPROVED" : "PENDING",
+            serviceNumber: p.service_number || "",
+            serviceBranch: p.service_branch || "",
+            specialization: p.specialization || "General Services",
+            rank: p.rank || "Officer",
+            yearsOfService: p.years_of_service || 0,
+            command: p.command_location || "Naval Headquarters",
+            avatarUrl: p.avatar_url || null,
+          } as User;
+        });
+        setUsers(mappedUsers);
+      })
+      .catch((err) => console.error("Error fetching directory:", err))
+      .finally(() => setLoading(false));
   }, []);
 
   const specializations = [
@@ -274,7 +313,20 @@ export default function DirectoryPage() {
 
             {/* Directory Content Cards Grid/List */}
             <div>
-              {filteredUsers.length === 0 ? (
+              {loading ? (
+                <div style={{
+                  textAlign: "center",
+                  padding: "6rem 2rem",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "1rem"
+                }}>
+                  <Spinner size="lg" />
+                  <p style={{ fontSize: "0.875rem", color: "var(--brand-gray-500)", fontWeight: 600 }}>Loading personnel archives...</p>
+                </div>
+              ) : filteredUsers.length === 0 ? (
                 <div style={{
                   textAlign: "center",
                   padding: "6rem 2rem",
