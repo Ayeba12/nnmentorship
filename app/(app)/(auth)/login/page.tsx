@@ -30,6 +30,15 @@ function LoginContent() {
                          lowerEmail.endsWith('@retired.navy.mil.ng');
     const isDemoPassword = password === 'password123';
 
+    if (isMockFormat && isDemoPassword) {
+      localStorage.setItem('mock_session', JSON.stringify({
+        access_token: `mock-token-${lowerEmail}`,
+        user: { email: lowerEmail, id: `mock-uuid-${lowerEmail}` }
+      }));
+      window.location.href = redirect || '/dashboard';
+      return;
+    }
+
     try {
       const { data, error } = await supabase.auth.signInWithPassword({ email: lowerEmail, password });
       
