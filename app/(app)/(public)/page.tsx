@@ -55,22 +55,18 @@ export default function PublicHome() {
   }, []);
 
   useEffect(() => {
-    try {
-      MockDatabase.initialize();
-      const users = MockDatabase.getUsers();
-      const pairs = MockDatabase.getPairs();
-      const courses = MockDatabase.getCourses();
-      const books = MockDatabase.getLibraryBooks();
-
-      setStats({
-        totalPersonnel: users.length || 240,
-        activeMatches: pairs.filter((p) => p.status === "ACTIVE").length || 48,
-        coursesCount: courses.filter((c) => c.status === "APPROVED").length || 18,
-        booksCount: books.filter((b) => b.status === "APPROVED").length || 32,
-      });
-    } catch (e) {
-      console.error(e);
-    }
+    api.stats()
+      .then((data) => {
+        if (data) {
+          setStats({
+            totalPersonnel: data.totalPersonnel,
+            activeMatches: data.activeMatches,
+            coursesCount: data.coursesCount,
+            booksCount: data.booksCount,
+          });
+        }
+      })
+      .catch((err) => console.error("Error fetching public stats:", err));
 
     // Dynamic courses
     api.courses.list()

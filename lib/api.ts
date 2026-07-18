@@ -190,6 +190,7 @@ export const api = {
     markRead: (id: string) => apiFetch<any>('/api/notifications', { method: 'PUT', body: JSON.stringify({ id, read: true }) }),
     remove: (id: string) => apiFetch('/api/notifications', { method: 'DELETE', body: JSON.stringify({ id }) }),
   },
+  stats: () => apiFetch<{ totalPersonnel: number; activeMatches: number; coursesCount: number; booksCount: number }>('/api/stats'),
   upload: async (file: File) => {
     const formData = new FormData();
     formData.append('file', file);
