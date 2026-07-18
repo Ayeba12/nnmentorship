@@ -24,6 +24,7 @@ export default function CourseDetail() {
   const [activeLessonIdx, setActiveLessonIdx] = useState(0);
   const [completedLessons, setCompletedLessons] = useState<Set<number>>(new Set());
   const [showLessonList, setShowLessonList] = useState(false);
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
 
   // Timed Quiz states
   const [quizAnswers, setQuizAnswers] = useState<Record<number, number>>({});
@@ -90,6 +91,10 @@ export default function CourseDetail() {
       const activeLesson = course.lessons[activeLessonIdx];
       loadDiscussions(activeLesson.id);
       loadAssignmentSubmission(activeLesson.id);
+
+      // Auto expand active section
+      const activeSec = activeLesson.section_title || 'General Module';
+      setExpandedSections(prev => ({ ...prev, [activeSec]: true }));
       
       // Reset quiz state
       setQuizAnswers({});
@@ -301,31 +306,86 @@ export default function CourseDetail() {
     return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
   };
 
-  const LessonList = () => (
-    <div className="space-y-1">
-      {lessons.map((lesson, idx) => (
-        <button
-          key={lesson.id}
-          onClick={() => { setActiveLessonIdx(idx); setShowLessonList(false); }}
-          className={`w-full flex items-center gap-2.5 p-2.5 rounded-md text-left text-sm transition-colors cursor-pointer ${
-            idx === activeLessonIdx ? 'bg-navy-700 text-white font-medium shadow-soft' : 'text-navy-600 hover:bg-navy-50'
-          }`}
-        >
-          <div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs flex-shrink-0 ${
-            idx === activeLessonIdx ? 'bg-navy-600 text-white' : 'bg-navy-100 text-navy-500'
-          }`}>
-            {completedLessons.has(lesson.id) ? <Check className="w-3.5 h-3.5 text-green-600 font-bold" /> : <span>{idx + 1}</span>}
-          </div>
-          <span className="flex-1 truncate">{lesson.title}</span>
-          <div className="flex items-center gap-1">
-            {lesson.lesson_type === 'video' && <Video className={`w-3.5 h-3.5 flex-shrink-0 ${idx === activeLessonIdx ? 'text-white' : 'text-navy-300'}`} />}
-            {lesson.lesson_type === 'quiz' && <HelpCircle className={`w-3.5 h-3.5 flex-shrink-0 ${idx === activeLessonIdx ? 'text-white' : 'text-navy-300'}`} />}
-            {lesson.lesson_type === 'assignment' && <FileText className={`w-3.5 h-3.5 flex-shrink-0 ${idx === activeLessonIdx ? 'text-white' : 'text-navy-300'}`} />}
-          </div>
-        </button>
-      ))}
-    </div>
-  );
+  const LessonList = () => {
+    // Group lessons by section_title
+    const sections: { title: string; lessons: { lesson: any; globalIndex: number }[] }[] = [];
+    lessons.forEach((lesson, globalIndex) => {
+      const secTitle = lesson.section_title || 'General Module';
+      let group = sections.find(s => s.title === secTitle);
+      if (!group) {
+        group = { title: secTitle, lessons: [] };
+        sections.push(group);
+      }
+      group.lessons.push({ lesson, globalIndex });
+    });
+
+    const toggleSection = (title: string) => {
+      setExpandedSections(prev => ({ ...prev, [title]: !prev[title] }));
+    };
+
+    return (
+      <div className="space-y-3">
+        {sections.map((sec, secIdx) => {
+          const isExpanded = !!expandedSections[sec.title];
+          const completedCount = sec.lessons.filter(sl => completedLessons.has(sl.lesson.id)).length;
+          const totalCount = sec.lessons.length;
+          const allCompleted = completedCount === totalCount;
+
+          return (
+            <div key={sec.title || secIdx} className="border border-navy-100 rounded-lg overflow-hidden bg-navy-50/5">
+              {/* Accordion Header */}
+              <button
+                onClick={() => toggleSection(sec.title)}
+                className="w-full flex items-center justify-between p-3 text-left bg-navy-50/20 hover:bg-navy-50/40 transition-colors cursor-pointer border-b border-navy-100/50"
+              >
+                <div className="min-w-0 flex-1 pr-2">
+                  <h4 className="text-xs font-bold text-navy-800 truncate leading-snug">{sec.title}</h4>
+                  <span className="text-[10px] font-semibold text-navy-400 block mt-0.5">
+                    {completedCount}/{totalCount} Lessons {allCompleted && '✓'}
+                  </span>
+                </div>
+                <ChevronRight className={`w-3.5 h-3.5 text-navy-400 shrink-0 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
+              </button>
+
+              {/* Accordion Content (Lessons) */}
+              {isExpanded && (
+                <div className="p-1.5 space-y-1 bg-white border-t border-navy-50/30">
+                  {sec.lessons.map(({ lesson, globalIndex }) => {
+                    const isActive = globalIndex === activeLessonIdx;
+                    return (
+                      <button
+                        key={lesson.id}
+                        onClick={() => { setActiveLessonIdx(globalIndex); setShowLessonList(false); }}
+                        className={`w-full flex items-center gap-2 p-2 rounded-md text-left text-xs transition-colors cursor-pointer ${
+                          isActive ? 'bg-navy-700 text-white font-medium shadow-sm' : 'text-navy-600 hover:bg-navy-50'
+                        }`}
+                      >
+                        <div className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] flex-shrink-0 ${
+                          isActive ? 'bg-navy-600 text-white' : 'bg-navy-100 text-navy-500'
+                        }`}>
+                          {completedLessons.has(lesson.id) ? (
+                            <Check className="w-3 h-3 text-green-600 font-bold" />
+                          ) : (
+                            <span>{sec.lessons.findIndex(l => l.lesson.id === lesson.id) + 1}</span>
+                          )}
+                        </div>
+                        <span className="flex-1 truncate">{lesson.title}</span>
+                        <div className="flex items-center gap-1">
+                          {lesson.lesson_type === 'video' && <Video className={`w-3 h-3 flex-shrink-0 ${isActive ? 'text-white' : 'text-navy-300'}`} />}
+                          {lesson.lesson_type === 'quiz' && <HelpCircle className={`w-3 h-3 flex-shrink-0 ${isActive ? 'text-white' : 'text-navy-300'}`} />}
+                          {lesson.lesson_type === 'assignment' && <FileText className={`w-3 h-3 flex-shrink-0 ${isActive ? 'text-white' : 'text-navy-300'}`} />}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
 
   return (
     <div className="max-w-5xl mx-auto space-y-5 sm:space-y-6 py-4">
@@ -445,6 +505,11 @@ export default function CourseDetail() {
                     <div className="flex items-center gap-2">
                       <span className="w-8 h-8 rounded-full bg-navy-700 text-white text-xs font-bold flex items-center justify-center">{activeLessonIdx + 1}</span>
                       <div>
+                        {activeLesson.section_title && (
+                          <span className="text-[10px] font-bold text-gold-600 uppercase tracking-wider block mb-1">
+                            {activeLesson.section_title}
+                          </span>
+                        )}
                         <h2 className="text-base sm:text-lg font-bold text-navy-800 leading-tight">{activeLesson.title}</h2>
                         <span className="text-xxs font-bold text-navy-400 uppercase tracking-wide">{activeLesson.lesson_type} Lecture</span>
                       </div>
