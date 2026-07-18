@@ -4,7 +4,12 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { api } from '@/lib/api';
 import { Card, Button, Badge, Spinner, EmptyState, Select, Pagination } from '@/components/ui';
-import { BookMarked, FileText, Video, Headphones, Download, ExternalLink, Search, Filter, Library as LibIcon, ListChecks } from 'lucide-react';
+import { useAuth } from '@/components/AuthContext';
+import { 
+  BookMarked, FileText, Video, Headphones, Download, 
+  ExternalLink, Search, Filter, Library as LibIcon, 
+  ListChecks, BookmarkPlus 
+} from 'lucide-react';
 import type { LibraryItem } from '@/lib/types-phase2';
 
 const categories = ['Leadership', 'Naval Doctrine', 'Career Transition', 'Technical Manuals', 'History', 'Mentorship'];
@@ -17,6 +22,24 @@ export default function Library() {
   const [showFilters, setShowFilters] = useState(false);
   const [tab, setTab] = useState<'library' | 'reading-lists'>('library');
   const [readingLists, setReadingLists] = useState<any[]>([]);
+  const { profile } = useAuth();
+  const [myLists, setMyLists] = useState<any[]>([]);
+  const [activeAddDropdown, setActiveAddDropdown] = useState<number | null>(null);
+
+  const handleAddItemToList = async (listId: number, bookId: number) => {
+    try {
+      const res = await api.readingLists.addItem(listId, bookId);
+      if (res && res.message) {
+        alert(res.message);
+      } else {
+        alert('Successfully added to reading list!');
+      }
+    } catch (err: any) {
+      alert(err.message || 'Failed to add item to reading list');
+    } finally {
+      setActiveAddDropdown(null);
+    }
+  };
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -49,6 +72,17 @@ export default function Library() {
   useEffect(() => {
     load();
   }, [tab, filters.category, filters.format, filters.rank_level]);
+
+  useEffect(() => {
+    if (profile) {
+      api.readingLists.list()
+        .then(lists => {
+          const editable = lists.filter(l => profile.role === 'admin' || l.curator_id === profile.id);
+          setMyLists(editable);
+        })
+        .catch(err => console.error("Error loading reading lists:", err));
+    }
+  }, [profile]);
 
   const handleDownload = async (item: LibraryItem) => {
     try {
@@ -187,13 +221,52 @@ export default function Library() {
                     transition={{ duration: 0.3, delay: i * 0.04 }}
                   >
                     <Card hover className="p-4 flex flex-col h-full">
-                      <div className="flex items-start gap-3 mb-3">
-                        <div className="w-10 h-10 rounded-lg bg-navy-100 flex items-center justify-center text-navy-600 flex-shrink-0">
-                          {formatIcon(item.format)}
+                      <div className="flex items-start justify-between gap-3 mb-3 relative">
+                        <div className="flex items-start gap-3 min-w-0 flex-1">
+                          <div className="w-10 h-10 rounded-lg bg-navy-100 flex items-center justify-center text-navy-600 flex-shrink-0">
+                            {formatIcon(item.format)}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <h3 className="font-semibold text-navy-800 text-sm truncate">{item.title}</h3>
+                            <p className="text-xs text-navy-400 truncate">{item.author || 'Unknown'}</p>
+                          </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-navy-800 text-sm truncate">{item.title}</h3>
-                          <p className="text-xs text-navy-400 truncate">{item.author || 'Unknown'}</p>
+
+                        {/* Bookmark / Reading list icon */}
+                        <div className="relative shrink-0">
+                          <button
+                            onClick={() => setActiveAddDropdown(activeAddDropdown === item.id ? null : item.id)}
+                            className="w-7 h-7 rounded-full flex items-center justify-center border border-navy-100 hover:bg-navy-50 text-navy-400 hover:text-navy-600 transition-all cursor-pointer shadow-soft"
+                            title="Add to Reading List"
+                          >
+                            <BookmarkPlus className="w-4 h-4" />
+                          </button>
+
+                          {/* Dropdown list of user's reading lists */}
+                          {activeAddDropdown === item.id && (
+                            <div className="absolute right-0 top-8 z-20 w-52 bg-white rounded-lg border border-navy-100 shadow-md py-1.5 text-left animation-fade-in">
+                              <div className="px-2.5 py-1 border-b border-navy-50 text-[10px] font-bold text-navy-400 uppercase tracking-wider">
+                                Add to Reading List
+                              </div>
+                              {myLists.length === 0 ? (
+                                <div className="px-3 py-2 text-xxs text-navy-400 italic">
+                                  No curated lists available.
+                                </div>
+                              ) : (
+                                <div className="max-h-36 overflow-y-auto">
+                                  {myLists.map(list => (
+                                    <button
+                                      key={list.id}
+                                      onClick={() => handleAddItemToList(list.id, item.id)}
+                                      className="w-full px-3 py-1.5 text-left text-xs text-navy-700 hover:bg-navy-50 hover:text-gold-700 transition-colors truncate block font-medium"
+                                    >
+                                      {list.title}
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
                       <p className="text-xs text-navy-500 mb-3 line-clamp-2 flex-1">{item.description}</p>

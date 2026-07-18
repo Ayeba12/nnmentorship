@@ -170,6 +170,10 @@ export const api = {
     list: () => apiFetch<ReadingList[]>('/api/reading-lists'),
     get: (id: number) => apiFetch<ReadingList>(`/api/reading-lists?id=${id}`),
     create: (data: any) => apiFetch<ReadingList>('/api/reading-lists', { method: 'POST', body: JSON.stringify(data) }),
+    addItem: (readingListId: number, bookId: number) =>
+      apiFetch<any>('/api/reading-lists', { method: 'PUT', body: JSON.stringify({ action: 'add_item', reading_list_id: readingListId, book_id: bookId }) }),
+    removeItem: (itemId: number) =>
+      apiFetch<any>('/api/reading-lists', { method: 'PUT', body: JSON.stringify({ action: 'remove_item', id: itemId }) }),
   },
   events: {
     list: () => apiFetch<AppEvent[]>('/api/events'),

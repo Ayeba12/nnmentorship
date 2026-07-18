@@ -137,3 +137,84 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
+
+export async function PUT(req: NextRequest) {
+  try {
+    const profile = await requireProfile(req);
+    if (!profile) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const body = await req.json();
+    const { action, reading_list_id, book_id, id } = body;
+
+    if (action === 'add_item') {
+      if (!reading_list_id || !book_id) {
+        return NextResponse.json({ error: 'Missing parameters' }, { status: 400 });
+      }
+
+      // Check list ownership (curator) or admin
+      const { data: list, error: listErr } = await supabase
+        .from('reading_lists')
+        .select('*')
+        .eq('id', reading_list_id)
+        .single();
+      
+      if (listErr || !list) {
+        return NextResponse.json({ error: 'Reading list not found' }, { status: 404 });
+      }
+
+      if (list.curator_id !== profile.id && profile.role !== 'admin') {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+
+      // Check if already exists in reading list
+      const { data: existing } = await supabase
+        .from('reading_list_items')
+        .select('*')
+        .eq('reading_list_id', reading_list_id)
+        .eq('library_item_id', book_id)
+        .maybeSingle();
+
+      if (existing) {
+        return NextResponse.json({ message: 'Item already in reading list' });
+      }
+
+      // Insert item
+      const { data: inserted, error: insertErr } = await supabase
+        .from('reading_list_items')
+        .insert({
+          reading_list_id,
+          library_item_id: book_id,
+          order_index: 0
+        })
+        .select()
+        .single();
+
+      if (insertErr) throw insertErr;
+
+      await logAudit(profile.id, 'add_reading_list_item', 'reading_list_item', String(inserted.id), `List ID: ${reading_list_id}, Book ID: ${book_id}`);
+      return NextResponse.json(inserted);
+    }
+
+    if (action === 'remove_item') {
+      if (!id) {
+        return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
+      }
+
+      // Delete item
+      const { error: deleteErr } = await supabase
+        .from('reading_list_items')
+        .delete()
+        .eq('id', id);
+
+      if (deleteErr) throw deleteErr;
+
+      await logAudit(profile.id, 'remove_reading_list_item', 'reading_list_item', String(id), `Item deleted`);
+      return NextResponse.json({ success: true });
+    }
+
+    return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+  } catch (err: any) {
+    console.error('Reading lists PUT error:', err);
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
