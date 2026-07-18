@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import supabase from '@/lib/supabase';
+import { supabaseService as supabase } from '@/lib/supabase';
 import { requireProfile, requireRole, logAudit } from '@/lib/api-helpers';
 
 export async function GET(req: NextRequest) {

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import supabase from '@/lib/supabase';
+import { supabaseService as supabase } from '@/lib/supabase';
 import { requireProfile } from '@/lib/api-helpers';
 import { encrypt, decrypt } from '@/lib/encryption';
 
