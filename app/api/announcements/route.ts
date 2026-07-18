@@ -46,6 +46,29 @@ export async function POST(req: NextRequest) {
 
     await logAudit(profile.id, 'posted_announcement', 'announcement', data.id ? String(data.id) : null, `Posted announcement: ${title}`);
 
+    // Batch insert notifications for all target users
+    try {
+      let profilesQuery = supabase.from('profiles').select('id');
+      if (target_role && target_role !== 'all') {
+        profilesQuery = profilesQuery.eq('role', target_role);
+      }
+      const { data: usersToNotify } = await profilesQuery;
+
+      if (usersToNotify && usersToNotify.length > 0) {
+        const notifsToInsert = usersToNotify.map((u: any) => ({
+          user_id: u.id,
+          type: 'announcement',
+          title: `Announcement: ${title}`,
+          message: content.length > 100 ? `${content.substring(0, 97)}...` : content,
+          link: '/dashboard',
+          read: false
+        }));
+        await supabase.from('notifications').insert(notifsToInsert);
+      }
+    } catch (notifErr) {
+      console.error('Failed to batch insert announcement notifications:', notifErr);
+    }
+
     return NextResponse.json(data);
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 });

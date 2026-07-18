@@ -302,3 +302,24 @@ export async function logAudit(actorId: number, action: string, targetType: stri
     console.error('Audit log error:', e);
   }
 }
+
+export async function createNotification(
+  userId: number,
+  type: 'request' | 'session' | 'course' | 'system' | 'announcement',
+  title: string,
+  message: string,
+  link: string
+) {
+  try {
+    await supabaseService.from('notifications').insert({
+      user_id: userId,
+      type,
+      title,
+      message,
+      link,
+      read: false,
+    });
+  } catch (e) {
+    console.error('Failed to create notification:', e);
+  }
+}

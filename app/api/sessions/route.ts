@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import supabase, { supabaseService } from '@/lib/supabase';
-import { requireProfile, logAudit } from '@/lib/api-helpers';
+import { requireProfile, logAudit, createNotification } from '@/lib/api-helpers';
 
 export async function GET(req: NextRequest) {
   try {
@@ -102,6 +102,24 @@ export async function POST(req: NextRequest) {
     if (sessError) throw sessError;
 
     await logAudit(profile.id, 'book_session', 'session', String(session.id), `Booked session type: ${session_type}`);
+
+    // Send notification to the other party
+    const recipientId = profile.id === rel.mentee_id ? rel.mentor_id : rel.mentee_id;
+    const formattedDate = new Date(scheduled_at).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
+    await createNotification(
+      recipientId,
+      'session',
+      'New Session Scheduled',
+      `${profile.full_name || 'Partner'} has scheduled a mentorship session on ${formattedDate}.`,
+      '/dashboard/sessions'
+    );
 
     return NextResponse.json(session, { status: 201 });
   } catch (err: any) {

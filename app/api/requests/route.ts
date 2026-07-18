@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import supabase from '@/lib/supabase';
-import { requireProfile, logAudit } from '@/lib/api-helpers';
+import { requireProfile, logAudit, createNotification } from '@/lib/api-helpers';
 
 export async function GET(req: NextRequest) {
   try {
@@ -63,6 +63,16 @@ export async function POST(req: NextRequest) {
       .select()
       .single();
     if (error) throw error;
+
+    // Send notification to the mentor
+    await createNotification(
+      mentor_id,
+      'request',
+      'New Mentorship Request',
+      `${profile.full_name || 'A mentee'} has requested you as a mentor.`,
+      '/dashboard/requests'
+    );
+
     return NextResponse.json(data, { status: 201 });
   } catch (err: any) {
     console.error('Requests POST error:', err);
@@ -112,6 +122,16 @@ export async function PUT(req: NextRequest) {
       if (relError) throw relError;
 
       await logAudit(profile.id, 'accept_request', 'mentorship_request', id, `Mentorship started`);
+
+      // Send notification to the mentee
+      await createNotification(
+        request.mentee_id,
+        'request',
+        'Mentorship Request Accepted',
+        `${profile.full_name || 'Your mentor'} has accepted your mentorship request!`,
+        '/dashboard/messages'
+      );
+
       return NextResponse.json({ request, relationship: rel });
     }
 
@@ -123,6 +143,16 @@ export async function PUT(req: NextRequest) {
         .select()
         .single();
       if (error) throw error;
+
+      // Send notification to the mentee
+      await createNotification(
+        data.mentee_id,
+        'request',
+        'Mentorship Request Declined',
+        `${profile.full_name || 'The mentor'} declined your mentorship request.`,
+        '/dashboard/requests'
+      );
+
       return NextResponse.json(data);
     }
 

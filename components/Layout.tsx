@@ -63,11 +63,18 @@ export default function Layout({ children }: LayoutProps) {
 
   useEffect(() => {
     if (profile) {
-      api.notifications.list()
-        .then(setNotifications)
-        .catch(err => console.error("Error loading header notifications:", err));
+      const load = () => {
+        api.notifications.list()
+          .then(setNotifications)
+          .catch(err => console.error("Error loading header notifications:", err));
+      };
+
+      load();
+
+      const interval = setInterval(load, 30000);
+      return () => clearInterval(interval);
     }
-  }, [profile]);
+  }, [profile, pathname]);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 

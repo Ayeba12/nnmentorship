@@ -33,27 +33,33 @@ function SearchResultsContent() {
         const q = query.toLowerCase();
 
         // client-side filter
-        const filteredMentors = mList.filter(m =>
-          m.full_name.toLowerCase().includes(q) ||
-          (m.rank && m.rank.toLowerCase().includes(q)) ||
-          (m.specialization && m.specialization.toLowerCase().includes(q)) ||
-          (m.command_location && m.command_location.toLowerCase().includes(q))
-        );
+        const filteredMentors = (mList || []).filter(m => {
+          if (!m) return false;
+          const fullName = (m.full_name || '').toLowerCase();
+          const rank = (m.rank || '').toLowerCase();
+          const spec = (m.specialization || '').toLowerCase();
+          const cmd = (m.command_location || '').toLowerCase();
+          return fullName.includes(q) || rank.includes(q) || spec.includes(q) || cmd.includes(q);
+        });
 
-        const filteredCourses = cList.filter(c =>
-          c.title.toLowerCase().includes(q) ||
-          (c.description && c.description.toLowerCase().includes(q)) ||
-          (c.category && c.category.toLowerCase().includes(q)) ||
-          (c.author?.full_name && c.author.full_name.toLowerCase().includes(q))
-        );
+        const filteredCourses = (cList || []).filter(c => {
+          if (!c) return false;
+          const title = (c.title || '').toLowerCase();
+          const desc = (c.description || '').toLowerCase();
+          const cat = (c.category || '').toLowerCase();
+          const authorName = (c.author?.full_name || '').toLowerCase();
+          return title.includes(q) || desc.includes(q) || cat.includes(q) || authorName.includes(q);
+        });
 
-        const filteredBlogs = bList.filter(b =>
-          b.title.toLowerCase().includes(q) ||
-          (b.excerpt && b.excerpt.toLowerCase().includes(q)) ||
-          (b.content && b.content.toLowerCase().includes(q)) ||
-          (b.category && b.category.toLowerCase().includes(q)) ||
-          (b.author?.full_name && b.author.full_name.toLowerCase().includes(q))
-        );
+        const filteredBlogs = (bList || []).filter(b => {
+          if (!b) return false;
+          const title = (b.title || '').toLowerCase();
+          const excerpt = (b.excerpt || '').toLowerCase();
+          const content = (b.content || '').toLowerCase();
+          const cat = (b.category || '').toLowerCase();
+          const authorName = (b.author?.full_name || '').toLowerCase();
+          return title.includes(q) || excerpt.includes(q) || content.includes(q) || cat.includes(q) || authorName.includes(q);
+        });
 
         setMentors(filteredMentors);
         setCourses(filteredCourses);

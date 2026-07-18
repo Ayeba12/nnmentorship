@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseService as supabase } from '@/lib/supabase';
-import { requireAuth, requireProfile, requireRole, logAudit, getProfile } from '@/lib/api-helpers';
+import { requireAuth, requireProfile, requireRole, logAudit, getProfile, createNotification } from '@/lib/api-helpers';
 import { mailer } from '@/lib/mail';
 
 export async function GET(req: NextRequest) {
@@ -156,6 +156,18 @@ export async function PUT(req: NextRequest) {
       if (error) throw error;
 
       await logAudit(admin.id, verification_status === 'verified' ? 'verify_user' : 'reject_user', 'profile', id, `User ${data.full_name} ${verification_status}`);
+
+      // Send verification status notification to the user
+      await createNotification(
+        id,
+        'system',
+        verification_status === 'verified' ? 'Account Verified' : 'Verification Update',
+        verification_status === 'verified' 
+          ? 'Your account verification request was approved. Welcome aboard!' 
+          : 'Your account verification request was declined. Please verify your credentials and try again.',
+        '/dashboard/profile'
+      );
+
       return NextResponse.json(data);
     }
 
