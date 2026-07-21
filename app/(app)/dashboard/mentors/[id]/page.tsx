@@ -7,8 +7,8 @@ import { motion } from 'framer-motion';
 import { api } from '@/lib/api';
 import { useAuth } from '@/components/AuthContext';
 import { Card, Button, Avatar, Badge, Spinner, Modal, Textarea, EmptyState, ProgressBar } from '@/components/ui';
-import { ArrowLeft, MapPin, Briefcase, Award, Clock, Sparkles, Check, MessageSquare } from 'lucide-react';
-import type { Profile, MatchedMentor, MentorshipRequest } from '@/lib/types';
+import { ArrowLeft, MapPin, Briefcase, Award, Clock, Sparkles, Check, MessageSquare, Calendar, CalendarDays, Repeat } from 'lucide-react';
+import type { Profile, MatchedMentor, MentorshipRequest, AvailabilitySlot } from '@/lib/types';
 
 export default function MentorDetail() {
   const params = useParams();
@@ -18,6 +18,8 @@ export default function MentorDetail() {
   const [mentor, setMentor] = useState<Profile | null>(null);
   const [matchData, setMatchData] = useState<MatchedMentor | null>(null);
   const [existingRequest, setExistingRequest] = useState<MentorshipRequest | null>(null);
+  const [availabilitySlots, setAvailabilitySlots] = useState<AvailabilitySlot[]>([]);
+  const [loadingAvailability, setLoadingAvailability] = useState(true);
   const [loading, setLoading] = useState(true);
   const [showRequest, setShowRequest] = useState(false);
   const [message, setMessage] = useState('');
@@ -34,6 +36,16 @@ export default function MentorDetail() {
       try {
         const m = await api.profiles.get(Number(id));
         setMentor(m);
+        // Load mentor availability slots
+        try {
+          const avail = await api.availability.list(Number(id));
+          setAvailabilitySlots(avail.slots || []);
+        } catch (e) {
+          console.error("Availability load error:", e);
+        } finally {
+          setLoadingAvailability(false);
+        }
+
         // Load match data if user is a mentee
         if (profile?.role === 'mentee') {
           try {
@@ -153,6 +165,64 @@ export default function MentorDetail() {
                   </motion.div>
                 ))}
               </div>
+            </div>
+          )}
+        </Card>
+      </motion.div>
+
+      {/* Available Mentorship Slots & Weekly Schedule */}
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.05 }}>
+        <Card className="p-6">
+          <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <div className="w-9 h-9 rounded-lg bg-navy-50 flex items-center justify-center">
+                <Calendar className="w-5 h-5 text-navy-600" />
+              </div>
+              <div>
+                <h2 className="font-bold text-navy-800">Available Mentorship Slots</h2>
+                <p className="text-xs text-navy-400">Open session slots created by {mentor.full_name}</p>
+              </div>
+            </div>
+            {availabilitySlots.length > 0 && (
+              <Badge variant="success">{availabilitySlots.length} Open Slot{availabilitySlots.length > 1 ? 's' : ''}</Badge>
+            )}
+          </div>
+
+          {loadingAvailability ? (
+            <div className="flex justify-center py-6"><Spinner /></div>
+          ) : availabilitySlots.length === 0 ? (
+            <div className="p-4 bg-navy-50/50 rounded-lg border border-navy-100 text-center">
+              <CalendarDays className="w-6 h-6 text-navy-400 mx-auto mb-1.5" />
+              <p className="text-xs font-semibold text-navy-700">No fixed weekly slots set</p>
+              <p className="text-[11px] text-navy-400 mt-0.5">This mentor hasn't published recurring time slots yet. You can still send a mentorship request or propose a session time.</p>
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-3">
+              {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((dayName, dayIdx) => {
+                const daySlots = availabilitySlots.filter(s => s.day_of_week === dayIdx);
+                if (daySlots.length === 0) return null;
+                return (
+                  <div key={dayIdx} className="p-3 rounded-lg bg-navy-50/60 border border-navy-100/70">
+                    <div className="flex items-center gap-1.5 mb-2">
+                      <CalendarDays className="w-3.5 h-3.5 text-navy-500" />
+                      <span className="text-xs font-bold text-navy-800">{dayName}</span>
+                    </div>
+                    <div className="space-y-1.5">
+                      {daySlots.map(slot => (
+                        <div key={slot.id} className="flex items-center justify-between p-2 rounded bg-white border border-navy-100 text-xs">
+                          <div className="flex items-center gap-1 text-navy-700 font-medium">
+                            <Clock className="w-3 h-3 text-navy-400" />
+                            <span>{slot.start_time} - {slot.end_time}</span>
+                          </div>
+                          {slot.is_recurring && (
+                            <span className="text-[9px] font-bold text-navy-500 bg-navy-50 px-1.5 py-0.5 rounded">Weekly</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </Card>

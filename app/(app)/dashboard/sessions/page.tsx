@@ -59,7 +59,7 @@ export default function Sessions() {
     if (bookForm.relationship_id && showBook) {
       const rel = relationships.find(r => r.id === Number(bookForm.relationship_id));
       if (rel) {
-        const mentorId = profile?.role === 'mentee' ? rel.mentor_id : rel.mentee_id;
+        const mentorId = rel.mentor_id;
         setLoadingSlots(true);
         const weekStart = getWeekStart(weekOffset);
         api.availability.list(mentorId, weekStart.toISOString().split('T')[0])
@@ -68,7 +68,7 @@ export default function Sessions() {
           .finally(() => setLoadingSlots(false));
       }
     }
-  }, [bookForm.relationship_id, showBook, weekOffset]);
+  }, [bookForm.relationship_id, showBook, weekOffset, relationships]);
 
   const weekDays = useMemo(() => {
     const start = getWeekStart(weekOffset);
