@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseService as supabase } from '@/lib/supabase';
-import { requireProfile } from '@/lib/api-helpers';
+import { requireProfile, createNotification } from '@/lib/api-helpers';
 import { encrypt, decrypt } from '@/lib/encryption';
 
 export async function GET(req: NextRequest) {
@@ -134,7 +134,23 @@ export async function POST(req: NextRequest) {
 
     msg.sender = senderProf;
 
-    // 4. Return message with decrypted content to matching client expectation
+    // 4. Notify the recipient about the new message
+    const recipientId = rel.mentor_id === profile.id ? rel.mentee_id : rel.mentor_id;
+    if (recipientId) {
+      try {
+        await createNotification(
+          recipientId,
+          'message',
+          `New message from ${profile.full_name}`,
+          content.length > 60 ? content.slice(0, 60) + '...' : content,
+          `/dashboard/messages/${relationship_id}`
+        );
+      } catch (notifErr) {
+        console.error('Failed to create message notification:', notifErr);
+      }
+    }
+
+    // 5. Return message with decrypted content to matching client expectation
     const responseData = {
       ...msg,
       content,

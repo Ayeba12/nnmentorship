@@ -100,7 +100,7 @@ export async function getProfile(req: NextRequest): Promise<Profile | null> {
   const emailToLookup = user.email.toLowerCase().trim();
   let finalEmail = emailToLookup;
   if (emailToLookup === 'mentor1@navymentor.ng') finalEmail = 'k.amadi@navy.mil.ng';
-  else if (emailToLookup === 'retired1@navymentor.ng') finalEmail = 'j.okonkwo@retired.navy.mil.ng';
+  else if (emailToLookup === 'retired1@navymentor.ng' || emailToLookup === 'demo.mentor@navymentor.ng') finalEmail = 'j.okonkwo@retired.navy.mil.ng';
   else if (emailToLookup === 'mentee1@navymentor.ng') finalEmail = 'y.musa@navy.mil.ng';
 
   // Try real database first
@@ -349,7 +349,7 @@ export async function logAudit(actorId: number, action: string, targetType: stri
 
 export async function createNotification(
   userId: number,
-  type: 'request' | 'session' | 'course' | 'system' | 'announcement',
+  type: 'request' | 'session' | 'course' | 'system' | 'announcement' | 'message',
   title: string,
   message: string,
   link: string
