@@ -39,7 +39,7 @@ function createLimiter(requests: number, window: string) {
 export const authLimiter = createLimiter(5, '60 s');
 
 /** Upload limiter for file upload routes */
-export const uploadLimiter = createLimiter(10, '60 s');
+export const uploadLimiter = createLimiter(30, '60 s');
 
 /** General API limiter */
 export const apiLimiter = createLimiter(60, '60 s');

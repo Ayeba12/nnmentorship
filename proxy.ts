@@ -24,13 +24,31 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Use IP address as the rate limit identifier
-  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-    || request.headers.get('x-real-ip')
-    || 'anonymous';
+  // Identify the rate limit key (prefer authenticated user ID/email, fallback to IP)
+  let identifier = '';
+  const authHeader = request.headers.get('authorization');
+  if (authHeader?.startsWith('Bearer ')) {
+    const token = authHeader.replace('Bearer ', '');
+    if (token.startsWith('mock-token-')) {
+      identifier = token.replace('mock-token-', '');
+    } else if (token.startsWith('ey') && token.includes('.')) {
+      try {
+        const parts = token.split('.');
+        const payload = JSON.parse(Buffer.from(parts[1].replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8'));
+        identifier = payload.sub || payload.email || '';
+      } catch (e) {}
+    }
+  }
+
+  // Fallback to IP address if unauthenticated
+  if (!identifier) {
+    identifier = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+      || request.headers.get('x-real-ip')
+      || 'anonymous';
+  }
 
   try {
-    const { success, limit, reset, remaining } = await limiter.limit(ip);
+    const { success, limit, reset, remaining } = await limiter.limit(identifier);
 
     if (!success) {
       return NextResponse.json(
