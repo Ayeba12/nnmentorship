@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import supabase from '@/lib/supabase';
+import { supabaseService as supabase } from '@/lib/supabase';
 import { requireProfile } from '@/lib/api-helpers';
 
 export async function GET(req: NextRequest) {
@@ -32,6 +32,7 @@ export async function PUT(req: NextRequest) {
       .from('notifications')
       .update({ read: read !== undefined ? read : true })
       .eq('id', id)
+      .eq('user_id', profile.id)
       .select()
       .single();
 
@@ -55,7 +56,8 @@ export async function DELETE(req: NextRequest) {
     const { error } = await supabase
       .from('notifications')
       .delete()
-      .eq('id', id);
+      .eq('id', id)
+      .eq('user_id', profile.id);
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ success: true });

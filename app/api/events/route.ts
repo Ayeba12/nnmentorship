@@ -133,6 +133,24 @@ export async function POST(req: NextRequest) {
       console.error('Failed to broadcast new event email:', mailErr);
     }
 
+    // Batch insert dashboard notifications for all platform users
+    try {
+      const { data: usersToNotify } = await supabaseService.from('profiles').select('id');
+      if (usersToNotify && usersToNotify.length > 0) {
+        const notifsToInsert = usersToNotify.map((u: any) => ({
+          user_id: u.id,
+          type: 'system',
+          title: `New Event: ${title}`,
+          message: `A new event has been scheduled: ${title}.`,
+          link: `/dashboard/events/${data.id}`,
+          read: false
+        }));
+        await supabaseService.from('notifications').insert(notifsToInsert);
+      }
+    } catch (notifErr) {
+      console.error('Failed to batch insert event notifications:', notifErr);
+    }
+
     return NextResponse.json(data);
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
