@@ -374,9 +374,14 @@ export default function DirectoryPage() {
                             flexShrink: 0,
                             backgroundColor: isMentor ? "var(--brand-black)" : "rgba(255, 206, 0, 0.15)",
                             color: isMentor ? "var(--brand-yellow)" : "var(--brand-black)",
-                            borderColor: isMentor ? "var(--brand-black)" : "var(--brand-yellow)"
+                            borderColor: isMentor ? "var(--brand-black)" : "var(--brand-yellow)",
+                            overflow: "hidden"
                           }}>
-                            {initials}
+                            {u.avatarUrl ? (
+                              <img src={u.avatarUrl} alt={u.fullName} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                            ) : (
+                              initials
+                            )}
                           </div>
    
                           {/* Name & Title */}
@@ -442,9 +447,14 @@ export default function DirectoryPage() {
                         <div className="directory-avatar" style={{
                           backgroundColor: isMentor ? "var(--brand-black)" : "rgba(255, 206, 0, 0.15)",
                           color: isMentor ? "var(--brand-yellow)" : "var(--brand-black)",
-                          borderColor: isMentor ? "var(--brand-black)" : "var(--brand-yellow)"
+                          borderColor: isMentor ? "var(--brand-black)" : "var(--brand-yellow)",
+                          overflow: "hidden"
                         }}>
-                          {initials}
+                          {u.avatarUrl ? (
+                            <img src={u.avatarUrl} alt={u.fullName} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                          ) : (
+                            initials
+                          )}
                         </div>
    
                         {/* Info */}
