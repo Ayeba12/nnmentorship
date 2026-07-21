@@ -133,30 +133,35 @@ export default function PublicHome() {
       author: "Captain Kelechi Amadi",
       role: "Marine Engineering • Western Command",
       avatar: "KA",
+      avatarUrl: "/assets/avatar_kelechi_amadi.png",
     },
     {
       quote: "As a retired officer, this has allowed me to publish active watch guidelines. Passing down watchkeeping doctrine ensures our traditions and readiness remain intact.",
       author: "Rear Admiral Joseph Okonkwo (Rtd.)",
       role: "Former Logistics Director • Command HQ",
       avatar: "JO",
+      avatarUrl: "/assets/avatar_joseph_okonkwo.png",
     },
     {
       quote: "The mentoring modules allowed me to bridge the gaps in communication protocols, aligning sea logs across naval sectors with absolute consistency.",
       author: "Lieutenant Yusuf Sani",
       role: "Communications Officer • Eastern Command",
       avatar: "YS",
+      avatarUrl: "/assets/avatar_yusuf_sani.png",
     },
     {
       quote: "Matching with an operations expert from NNS Beecroft helped me master offshore patrol techniques. The structured checklist format is extremely practical for junior officers.",
       author: "Sub-Lieutenant Amina Yusuf",
       role: "Navigation Officer • Central Naval Command",
       avatar: "AY",
+      avatarUrl: "/assets/avatar_amina_yusuf.png",
     },
     {
       quote: "Managing electronic warfare training requires continuous learning. Through the platform, I was able to consult a retired commander who provided invaluable tactical manuals.",
       author: "Commander Tunde Folayan",
       role: "Operations Director • Naval War College Nigeria",
       avatar: "TF",
+      avatarUrl: "/assets/avatar_tunde_folayan.png",
     },
   ];
 
@@ -808,9 +813,18 @@ export default function PublicHome() {
                       fontWeight: 700,
                       fontSize: "0.9375rem",
                       border: "2px solid var(--border-primary)",
-                      flexShrink: 0
+                      flexShrink: 0,
+                      overflow: "hidden"
                     }}>
-                      {t.avatar}
+                      {(t as any).avatarUrl ? (
+                        <img 
+                          src={(t as any).avatarUrl} 
+                          alt={t.author} 
+                          style={{ width: "100%", height: "100%", objectFit: "cover" }} 
+                        />
+                      ) : (
+                        t.avatar
+                      )}
                     </div>
                     <div>
                       <h4 style={{ fontSize: "0.875rem", fontWeight: 700, color: "var(--brand-black)", margin: 0 }}>
