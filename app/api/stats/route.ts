@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
       supabase.from('profiles').select('*', { count: 'exact', head: true }).neq('role', 'admin').eq('verification_status', 'verified'),
       supabase.from('mentorship_relationships').select('*', { count: 'exact', head: true }).eq('status', 'active'),
       supabase.from('courses').select('*', { count: 'exact', head: true }),
-      supabase.from('library_books').select('*', { count: 'exact', head: true }),
+      supabase.from('library_items').select('*', { count: 'exact', head: true }),
     ]);
 
     return NextResponse.json({
