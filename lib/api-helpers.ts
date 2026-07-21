@@ -5,15 +5,15 @@ import { MockDatabase } from '../domain/MockDatabase';
 
 const mapMockIdToDbId = (mockId: string): number => {
   const mapping: Record<string, number> = {
-    'user-admin-1': 1,
-    'user-mentor-1': 2,
-    'user-mentor-2': 3,
-    'user-mentor-3': 4,
-    'user-mentor-retired-1': 5,
-    'user-mentor-retired-2': 6,
-    'user-mentee-1': 7,
-    'user-mentee-2': 8,
-    'user-mentee-3': 9,
+    'user-admin-1': 10001,
+    'user-mentor-1': 10002,
+    'user-mentor-2': 10003,
+    'user-mentor-3': 10004,
+    'user-mentor-retired-1': 10005,
+    'user-mentor-retired-2': 10006,
+    'user-mentee-1': 10007,
+    'user-mentee-2': 10008,
+    'user-mentee-3': 10009,
   };
   if (mapping[mockId]) return mapping[mockId];
 
@@ -22,7 +22,7 @@ const mapMockIdToDbId = (mockId: string): number => {
   for (let i = 0; i < mockId.length; i++) {
     hash = mockId.charCodeAt(i) + ((hash << 5) - hash);
   }
-  return Math.abs(hash % 100000) + 1000;
+  return Math.abs(hash % 100000) + 20000;
 };
 
 const mapMockRoleToProfileRole = (mockRole: string): UserRole => {
@@ -141,6 +141,12 @@ export async function getProfile(req: NextRequest): Promise<Profile | null> {
             years_of_service: mockUser.yearsServed || 5,
             command_location: mockUser.command || 'NHQ Abuja',
             bio: mockUser.bio || 'Auto-created mock profile.',
+            avatar_url: (mockUser as any).avatar_url || (mockUser as any).avatarUrl || null,
+            last_rank_held: mockUser.lastRankHeld || null,
+            years_served: mockUser.yearsServed || null,
+            years_since_retirement: mockUser.yearsRetired || null,
+            civilian_role: mockUser.civilianRole || null,
+            civilian_industry: mockUser.civilianIndustry || null,
           })
           .select()
           .single();
