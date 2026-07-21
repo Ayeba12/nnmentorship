@@ -34,11 +34,12 @@ export default function MentorDetail() {
     if (!id) return;
     const load = async () => {
       try {
-        const m = await api.profiles.get(Number(id));
+        const m = await api.profiles.get(id as any);
         setMentor(m);
-        // Load mentor availability slots
+        // Load mentor availability slots using profile database ID
+        const targetId = m?.id || id;
         try {
-          const avail = await api.availability.list(Number(id));
+          const avail = await api.availability.list(targetId as any);
           setAvailabilitySlots(avail.slots || []);
         } catch (e) {
           console.error("Availability load error:", e);

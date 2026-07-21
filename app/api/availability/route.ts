@@ -15,11 +15,29 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Missing mentor_id' }, { status: 400 });
     }
 
+    let targetMentorId: number | string = mentorId;
+    if (isNaN(Number(mentorId))) {
+      const mapping: Record<string, number> = {
+        'user-admin-1': 10001,
+        'user-mentor-1': 10002,
+        'user-mentor-2': 10003,
+        'user-mentor-3': 10004,
+        'user-mentor-retired-1': 10005,
+        'user-mentor-retired-2': 10006,
+        'user-mentee-1': 10007,
+        'user-mentee-2': 10008,
+        'user-mentee-3': 10009,
+      };
+      if (mapping[mentorId]) {
+        targetMentorId = mapping[mentorId];
+      }
+    }
+
     // 1. Fetch availability slots for the mentor
     const { data: slots, error: slotsError } = await supabase
       .from('availability_slots')
       .select('*')
-      .eq('mentor_id', mentorId);
+      .eq('mentor_id', targetMentorId);
     if (slotsError) throw slotsError;
 
     // 2. Fetch booked sessions for that week if provided
@@ -33,7 +51,7 @@ export async function GET(req: NextRequest) {
       const { data: rels } = await supabase
         .from('mentorship_relationships')
         .select('id')
-        .eq('mentor_id', mentorId)
+        .eq('mentor_id', targetMentorId)
         .eq('status', 'active');
       const relIds = rels?.map(r => r.id) || [];
 

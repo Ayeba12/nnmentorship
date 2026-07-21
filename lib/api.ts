@@ -48,7 +48,7 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
 export const api = {
   profiles: {
     me: () => apiFetch<Profile>('/api/profiles?me=true'),
-    get: (id: number) => apiFetch<Profile>(`/api/profiles?id=${id}`),
+    get: (id: number | string) => apiFetch<Profile>(`/api/profiles?id=${id}`),
     directory: () => apiFetch<Profile[]>('/api/profiles?directory=true'),
     mentors: (params: Record<string, string> = {}) => {
       const qs = new URLSearchParams({ mentors: 'true', ...params }).toString();
@@ -104,7 +104,7 @@ export const api = {
     deleteMilestone: (id: number) => apiFetch('/api/goals', { method: 'DELETE', body: JSON.stringify({ action: 'delete_milestone', id }) }),
   },
   availability: {
-    list: (mentor_id: number, week?: string) => apiFetch<{ slots: AvailabilitySlot[]; bookedSessions: any[] }>(`/api/availability?mentor_id=${mentor_id}${week ? `&week=${week}` : ''}`),
+    list: (mentor_id: number | string, week?: string) => apiFetch<{ slots: AvailabilitySlot[]; bookedSessions: any[] }>(`/api/availability?mentor_id=${mentor_id}${week ? `&week=${week}` : ''}`),
     create: (data: Partial<AvailabilitySlot>) => apiFetch<AvailabilitySlot>('/api/availability', { method: 'POST', body: JSON.stringify(data) }),
     remove: (id: number) => apiFetch('/api/availability', { method: 'DELETE', body: JSON.stringify({ id }) }),
   },
