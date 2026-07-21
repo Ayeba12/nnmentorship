@@ -196,6 +196,12 @@ export const api = {
   },
   stats: () => apiFetch<{ totalPersonnel: number; activeMatches: number; coursesCount: number; booksCount: number }>('/api/stats'),
   upload: async (file: File) => {
+    // Client-side file size constraint verification (Max 4.5MB)
+    const MAX_SIZE = 4.5 * 1024 * 1024;
+    if (file.size > MAX_SIZE) {
+      throw new Error('File size exceeds the 4MB limit. Please compress your image or select a smaller file.');
+    }
+
     const formData = new FormData();
     formData.append('file', file);
     
@@ -223,7 +229,21 @@ export const api = {
         ...(token ? { Authorization: `Bearer ${token}` } : {})
       }
     });
-    const data = await res.json();
+
+    const responseText = await res.text();
+    let data: any = {};
+    try {
+      data = JSON.parse(responseText);
+    } catch (e) {
+      if (!res.ok) {
+        if (res.status === 413) {
+          throw new Error('File size is too large for the server. Please upload an image under 4MB.');
+        }
+        throw new Error(responseText.substring(0, 100) || `Upload failed with status code ${res.status}`);
+      }
+      throw new Error('Invalid JSON response from server');
+    }
+
     if (!res.ok) throw new Error(data.error || 'Request failed');
     return data as { url: string };
   },
